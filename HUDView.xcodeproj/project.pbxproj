@@ -16,6 +16,11 @@
 			path = HUDView;
 			sourceTree = "<group>";
 		};
+		1701F8F52F2D562A006A0A89 /* Location */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Location;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -32,6 +37,7 @@
 		1701F8BE2F2CDC23006A0A89 = {
 			isa = PBXGroup;
 			children = (
+				1701F8F52F2D562A006A0A89 /* Location */,
 				1701F8C92F2CDC23006A0A89 /* HUDView */,
 				1701F8C82F2CDC23006A0A89 /* Products */,
 			);
@@ -62,6 +68,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				1701F8C92F2CDC23006A0A89 /* HUDView */,
+				1701F8F52F2D562A006A0A89 /* Location */,
 			);
 			name = HUDView;
 			packageProductDependencies = (

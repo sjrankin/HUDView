@@ -160,17 +160,6 @@ struct POIMarker: View {
                 Text(visiblePOI.distanceFormatted)
                     .font(.caption2)
                     .foregroundStyle(.black.opacity(0.8))
-                
-                // Population or elevation
-                if let population = visiblePOI.poi.population {
-                    Text(formatPopulation(population))
-                        .font(.caption2)
-                        .foregroundStyle(.black.opacity(0.7))
-                } else if let elevation = visiblePOI.poi.elevation {
-                    Text(formatElevation(elevation))
-                        .font(.caption2)
-                        .foregroundStyle(.black.opacity(0.7))
-                }
             }
             .padding(.horizontal, 8)
             .padding(.vertical, 6)
@@ -240,7 +229,7 @@ struct POIListView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Nearby Landmarks")
                 .font(.headline)
-                .foregroundStyle(.black)
+                .foregroundStyle(.white)
                 .padding(.horizontal)
             
             ScrollView(.horizontal, showsIndicators: false) {
@@ -272,7 +261,7 @@ struct POICard: View {
                 Text(visiblePOI.poi.name)
                     .font(.subheadline)
                     .fontWeight(.semibold)
-                    .foregroundStyle(.black)
+                    .foregroundStyle(.white)
                     .lineLimit(1)
             }
             
@@ -282,7 +271,7 @@ struct POICard: View {
                 Text(visiblePOI.distanceFormatted)
                     .font(.caption)
             }
-            .foregroundStyle(.black.opacity(0.7))
+            .foregroundStyle(.white.opacity(0.8))
             
             if let population = visiblePOI.poi.population {
                 HStack(spacing: 4) {
@@ -291,13 +280,13 @@ struct POICard: View {
                     Text(formatPopulation(population))
                         .font(.caption)
                 }
-                .foregroundStyle(.black.opacity(0.6))
+                .foregroundStyle(.white.opacity(0.7))
             }
             
             if let description = visiblePOI.poi.description {
                 Text(description)
                     .font(.caption2)
-                    .foregroundStyle(.black.opacity(0.5))
+                    .foregroundStyle(.white.opacity(0.6))
                     .lineLimit(2)
             }
         }
@@ -307,7 +296,7 @@ struct POICard: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(.black.opacity(0.1), lineWidth: 1)
+                .stroke(.white.opacity(0.2), lineWidth: 1)
         )
     }
     
@@ -403,13 +392,13 @@ struct CompassMarker: View {
         if abs(offset) < screenWidth / 2 + 100 { // Only show if near screen
             VStack(spacing: 4) {
                 Rectangle()
-                    .fill(.black)
+                    .fill(.white)
                     .frame(width: 2, height: marker.isCardinal ? 15 : 10)
                 
                 Text(marker.label)
                     .font(marker.isCardinal ? .caption : .caption2)
                     .fontWeight(marker.isCardinal ? .bold : .regular)
-                    .foregroundStyle(.black)
+                    .foregroundStyle(.white)
             }
             .offset(x: offset)
             .opacity(opacityForDistance(offset))

@@ -30,7 +30,7 @@ struct POI: Identifiable {
 }
 
 /// Type of point of interest
-enum POIType: CaseIterable {
+enum POIType: String, CaseIterable {
     case city
     case mountain
     case bridge
@@ -123,6 +123,19 @@ struct NorthernCaliforniaData {
         POI(name: "Richmond", latitude: 37.9358, longitude: -122.3477, type: .city, population: 116_448),
         POI(name: "Concord", latitude: 37.9780, longitude: -122.0311, type: .city, population: 129_295),
         POI(name: "Vallejo", latitude: 38.1041, longitude: -122.2566, type: .city, population: 126_090),
+        POI(name: "Redwood City", latitude: 37.521037, longitude: -122.256810, type: .city, population: 0),
+
+        // HQ
+        POI(name: "Washington DC", latitude: 38.9073, longitude: 77.0369, type: .city, population: 702_250),
+        
+        // Japan
+        POI(name: "Sapporo", latitude: 43.0618, longitude: 141.3545, type: .city, population: 1_967_361),
+        POI(name: "Yubari", latitude: 43.0568, longitude: 141.9739, type: .city, population: 6_374),
+        POI(name: "Tokyo", latitude: 35.6764, longitude: 139.6500, type: .city, population: 14_000_000),
+        
+        // Foothills
+        POI(name: "Placerville", latitude: 38.7296, longitude: -120.7985, type: .city, population: 10_747),
+        POI(name: "Jackson", latitude: 38.3488, longitude: -120.7741, type: .city, population: 5_079),
         
         // Sacramento Region
         POI(name: "Sacramento", latitude: 38.5816, longitude: -121.4944, type: .city, population: 524_943),
@@ -142,6 +155,9 @@ struct NorthernCaliforniaData {
         POI(name: "Mount Diablo", latitude: 37.8816, longitude: -121.9144, type: .mountain, elevation: 1173),
         POI(name: "Mount Tamalpais", latitude: 37.9235, longitude: -122.5965, type: .mountain, elevation: 784),
         POI(name: "Mount Hamilton", latitude: 37.3414, longitude: -121.6426, type: .mountain, elevation: 1283),
+        POI(name: "Mount Whitney", latitude: 36.5785, longitude: -118.2923, type: .mountain, elevation: 4421),
+        POI(name: "Pyramid Peak", latitude: 38.8450, longitude: -120.1578, type: .mountain, elevation: 3043),
+        POI(name: "富士山", latitude: 35.35806, longitude: 138.73, type: .mountain, elevation: 3776),
         
         // Bridges
         POI(name: "Golden Gate Bridge", latitude: 37.8199, longitude: -122.4783, type: .bridge),
@@ -165,10 +181,13 @@ struct NorthernCaliforniaData {
     // MARK: - Test POIs
     
     static let testPOIs: [POI] = [
-        POI(name: "Test Point North", latitude: 37.8, longitude: -122.4, type: .test, description: "Test marker 1"),
-        POI(name: "Test Point South", latitude: 37.7, longitude: -122.4, type: .test, description: "Test marker 2"),
-        POI(name: "Test Point East", latitude: 37.75, longitude: -122.35, type: .test, description: "Test marker 3"),
-        POI(name: "Test Point West", latitude: 37.75, longitude: -122.45, type: .test, description: "Test marker 4"),
+        POI(name: "Home", latitude: 38.00665, longitude: 121.35991, type: .test, description: "Home"),
+        POI(name: "Work", latitude: 37.521037, longitude: -122.256810, type: .test, description: "RWC Office"),
+        POI(name: "Old House", latitude: 38.631662, longitude: -120.930632, type: .test, description: "Shingle Springs"),
+        POI(name: "Test Point North", latitude: 0.0, longitude: 0.0, type: .test, description: "Test marker 1"),
+        POI(name: "Test Point South", latitude: 0.0, longitude: -90.0, type: .test, description: "Test marker 2"),
+        POI(name: "Test Point East", latitude: 90.0, longitude: -0.0, type: .test, description: "Test marker 3"),
+        POI(name: "Test Point West", latitude: -90.0, longitude: -0.0, type: .test, description: "Test marker 4"),
     ]
     
     // MARK: - Combined Data
