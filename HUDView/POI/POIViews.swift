@@ -11,6 +11,7 @@ import SwiftUI
 struct POIOverlayView: View {
     let visiblePOIs: [POIVisibilityService.VisiblePOI]
     let userElevation: Double? // User's current elevation in meters
+    let devicePitch: Double // Device pitch in degrees (positive = looking up)
     
     var body: some View {
         GeometryReader { geometry in
@@ -26,11 +27,14 @@ struct POIOverlayView: View {
                                 poi: visiblePOI.poi,
                                 distance: visiblePOI.distance,
                                 userElevation: userElevation,
+                                devicePitch: 0.0,//devicePitch,
                                 height: geometry.size.height
                             )
                         )
                 }
             }
+            // Force recalculation when devicePitch changes significantly
+            .id(Int(devicePitch * 10)) // Round to 0.1° precision
         }
     }
     
@@ -59,34 +63,40 @@ struct POIOverlayView: View {
     ///   - poi: The POI being positioned
     ///   - distance: Distance to POI in meters
     ///   - userElevation: User's current elevation in meters
+    ///   - devicePitch: Device pitch in degrees (positive = looking up)
     ///   - height: Screen height
     /// - Returns: Y position on screen
-    private func calculateVerticalPosition(poi: POI, distance: Double, userElevation: Double?, height: CGFloat) -> CGFloat {
+    private func calculateVerticalPosition(poi: POI, distance: Double, userElevation: Double?, devicePitch: Double, height: CGFloat) -> CGFloat {
         let screenCenter = height * 0.5
         
-        // Calculate elevation angle
+        // Calculate elevation angle to POI
         let elevationAngle = calculateElevationAngle(
             poiElevation: poi.elevation,
             userElevation: userElevation,
             distance: distance
         )
         
-        // Convert angle to screen position
-        // Assuming vertical FOV of ~40° (typical for smartphones)
-        // This maps ±20° to the screen height
-        let verticalFOV: Double = 40.0
-        let halfVerticalFOV = verticalFOV / 2.0
+        // Account for device pitch:
+        // When you look UP (+pitch), POIs move UP in your field of view
+        // So we ADD the pitch to the elevation angle
+        let effectiveAngle = elevationAngle + devicePitch
         
-        // Clamp the angle to reasonable bounds
-        let clampedAngle = max(-halfVerticalFOV, min(halfVerticalFOV, elevationAngle))
+        // Camera vertical field of view (typical for iPhone)
+        let verticalFOV: Double = 40.0 // degrees
+        let halfVerticalFOV = verticalFOV / 2.0 // ±20°
+        
+        // Don't clamp - allow POIs to calculate positions beyond screen bounds
+        // The view system will naturally clip them
+        // This prevents the "bounce back" effect
         
         // Map angle to screen position
-        // Positive angle (looking up) = lower Y value (higher on screen)
-        // Negative angle (looking down) = higher Y value (lower on screen)
-        let angleRatio = clampedAngle / halfVerticalFOV
-        let offset = CGFloat(angleRatio) * (height * 0.4) // Use 40% of screen height for positioning range
+        // Screen Y: 0 = top, height = bottom
+        // Positive angle (up) = smaller Y (higher on screen) → subtract offset
+        // Negative angle (down) = larger Y (lower on screen) → subtract negative = add
+        let angleRatio = effectiveAngle / halfVerticalFOV
+        let offset = CGFloat(angleRatio) * (height * 0.5) // Use full half-screen
         
-        return screenCenter - offset
+        return screenCenter - offset // SUBTRACT: positive angle = smaller Y = higher on screen
     }
     
     /// Calculate the elevation angle from user to POI accounting for Earth's curvature
@@ -107,8 +117,9 @@ struct POIOverlayView: View {
         let curvatureDrop = (distance * distance) / (2.0 * earthRadius)
         
         // Effective elevation difference accounting for curvature
-        // The POI appears "higher" because Earth curves away
-        let effectiveElevationDiff = (poiElev - userElev) + curvatureDrop
+        // The POI appears "lower" due to Earth curving away, so we subtract the curvature drop
+        // However, the POI's actual elevation above sea level compensates for some of this
+        let effectiveElevationDiff = (poiElev - userElev) - curvatureDrop
         
         // Calculate angle using arctangent
         // angle = atan(elevation_difference / horizontal_distance)

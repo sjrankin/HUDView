@@ -11,6 +11,7 @@ import SwiftUI
 struct HorizonLineView: View {
     let currentHeading: Double
     let userElevation: Double?
+    let devicePitch: Double // Device pitch in degrees (positive = looking up)
     
     var body: some View {
         GeometryReader { geometry in
@@ -24,19 +25,22 @@ struct HorizonLineView: View {
         let centerY = size.height * 0.5
         
         // Calculate horizon position based on user elevation
-        let elevationAngle = calculateHorizonElevation(userElevation: userElevation ?? 0)
+        let horizonElevationAngle = calculateHorizonElevation(userElevation: userElevation ?? 0)
+        
+        // Account for device pitch: if looking up, horizon moves down; if looking down, horizon moves up
+        let effectiveAngle = horizonElevationAngle //+ devicePitch
         
         // Convert elevation angle to screen Y position
         let verticalFOV: Double = 40 // degrees
         let halfVerticalFOV = verticalFOV / 2
         
-        // Clamp angle to visible range
-        let clampedAngle = max(-halfVerticalFOV, min(halfVerticalFOV, elevationAngle))
+        // Don't clamp - allow horizon to go beyond screen bounds naturally
+        // This prevents the "bounce back" effect
         
         // Map angle to screen position
         // Positive angle (up) = lower Y value (higher on screen)
-        let angleRatio = clampedAngle / halfVerticalFOV
-        let offset = angleRatio * (size.height * 0.4)
+        let angleRatio = effectiveAngle / halfVerticalFOV
+        let offset = angleRatio * (size.height * 0.5)
         let y = centerY - offset
         
         // Create straight horizontal line
@@ -83,6 +87,7 @@ struct HorizonLineView: View {
 struct HorizonLineWithLabel: View {
     let currentHeading: Double
     let userElevation: Double?
+    let devicePitch: Double
     @Binding var showHorizon: Bool
     
     var body: some View {
@@ -90,7 +95,8 @@ struct HorizonLineWithLabel: View {
             if showHorizon {
                 HorizonLineView(
                     currentHeading: currentHeading,
-                    userElevation: userElevation
+                    userElevation: userElevation,
+                    devicePitch: devicePitch
                 )
             }
         }
@@ -105,6 +111,7 @@ struct HorizonLineWithLabel: View {
         HorizonLineWithLabel(
             currentHeading: 45,
             userElevation: 100,
+            devicePitch: 0,
             showHorizon: $showHorizon
         )
     }

@@ -123,10 +123,11 @@ struct NorthernCaliforniaData {
         POI(name: "Richmond", latitude: 37.9358, longitude: -122.3477, type: .city, population: 116_448),
         POI(name: "Concord", latitude: 37.9780, longitude: -122.0311, type: .city, population: 129_295),
         POI(name: "Vallejo", latitude: 38.1041, longitude: -122.2566, type: .city, population: 126_090),
-        POI(name: "Redwood City", latitude: 37.521037, longitude: -122.256810, type: .city, population: 0),
-
+        POI(name: "Redwood City", latitude: 37.521037, longitude: -122.256810, type: .city, population: 84_292),
+        POI(name: "Danville", latitude: 37.8216, longitude: -121.9999, type: .city, population: 43_100),
+        
         // HQ
-        POI(name: "Washington DC", latitude: 38.9073, longitude: 77.0369, type: .city, population: 702_250),
+        POI(name: "Washington DC", latitude: 38.9073, longitude: -77.0369, type: .city, population: 702_250),
         
         // Japan
         POI(name: "Sapporo", latitude: 43.0618, longitude: 141.3545, type: .city, population: 1_967_361),
@@ -145,6 +146,7 @@ struct NorthernCaliforniaData {
         // Central Valley
         POI(name: "Stockton", latitude: 37.9577, longitude: -121.2908, type: .city, population: 320_554),
         POI(name: "Modesto", latitude: 37.6391, longitude: -120.9969, type: .city, population: 218_464),
+        POI(name: "Fresno", latitude: 36.7442, longitude: -119.7631, type: .city, population: 550_000)
     ]
     
     // MARK: - Major Landmarks
@@ -162,6 +164,8 @@ struct NorthernCaliforniaData {
         // Bridges
         POI(name: "Golden Gate Bridge", latitude: 37.8199, longitude: -122.4783, type: .bridge),
         POI(name: "Bay Bridge", latitude: 37.8098, longitude: -122.3647, type: .bridge),
+        POI(name: "San Mateo Bridge", latitude: 37.5907, longitude: -122.2429, type: .bridge),
+        POI(name: "Dumbarton Bridge", latitude: 37.5048, longitude: -122.1204, type: .bridge),
         
         // Parks
         POI(name: "Yosemite NP", latitude: 37.8651, longitude: -119.5383, type: .park),
@@ -184,10 +188,6 @@ struct NorthernCaliforniaData {
         POI(name: "Home", latitude: 38.00665, longitude: 121.35991, type: .test, description: "Home"),
         POI(name: "Work", latitude: 37.521037, longitude: -122.256810, type: .test, description: "RWC Office"),
         POI(name: "Old House", latitude: 38.631662, longitude: -120.930632, type: .test, description: "Shingle Springs"),
-        POI(name: "Test Point North", latitude: 0.0, longitude: 0.0, type: .test, description: "Test marker 1"),
-        POI(name: "Test Point South", latitude: 0.0, longitude: -90.0, type: .test, description: "Test marker 2"),
-        POI(name: "Test Point East", latitude: 90.0, longitude: -0.0, type: .test, description: "Test marker 3"),
-        POI(name: "Test Point West", latitude: -90.0, longitude: -0.0, type: .test, description: "Test marker 4"),
     ]
     
     // MARK: - Combined Data
