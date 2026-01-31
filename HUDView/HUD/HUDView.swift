@@ -12,16 +12,10 @@ import CoreLocation
 struct HUDView: View {
     @State private var cameraManager = CameraManager()
     @State private var locationManager = LocationManager()
-    @State private var selectedCamera: AVCaptureDevice.Position = .back
+    @State private var settings = HUDSettings.shared
     @State private var visiblePOIs: [POIVisibilityService.VisiblePOI] = []
     @State private var nearbyPOIs: [POIVisibilityService.VisiblePOI] = []
-    @State private var showPOIList = false
-    @State private var showCompass = true
     @State private var showFilterSheet = false
-    @State private var selectedPOITypes: Set<POIType> = Set(POIType.allCases)
-    @State private var maxPOIDistance: Double = 100_000
-    @State private var maxListDistance: Double = 50_000
-    @State private var showHorizon = true
     @Environment(\.verticalSizeClass) var verticalSizeClass
     
     private var isLandscape: Bool {
@@ -34,8 +28,8 @@ struct HUDView: View {
             ZStack {
                 // Camera preview background
                 if cameraManager.isAuthorized {
-                    CameraView(cameraPosition: selectedCamera)
-                        .id(selectedCamera) // Forces view recreation when camera changes
+                    CameraView(cameraPosition: settings.selectedCamera)
+                        .id(settings.selectedCamera) // Forces view recreation when camera changes
                 } else {
                     Color.black
                 }
@@ -43,13 +37,13 @@ struct HUDView: View {
                 // HUD overlay
                 VStack {
                     // Compass bearing indicator at top
-                    if showCompass, let heading = locationManager.trueHeading, locationManager.isAuthorized {
+                    if settings.showCompass, let heading = locationManager.trueHeading, locationManager.isAuthorized {
                         CompassBearingView(currentHeading: heading)
                             .transition(.move(edge: .top))
                     }
                     
                     // POI list (optional)
-                    if showPOIList && !nearbyPOIs.isEmpty && locationManager.isAuthorized {
+                    if settings.showPOIList && !nearbyPOIs.isEmpty && locationManager.isAuthorized {
                         POIListView(pois: nearbyPOIs)
                             .padding(.horizontal)
                             .padding(.top, 8)
@@ -77,7 +71,7 @@ struct HUDView: View {
                     HorizonLineWithLabel(
                         currentHeading: heading,
                         userElevation: locationManager.altitude,
-                        showHorizon: $showHorizon
+                        showHorizon: $settings.showHorizon
                     )
                     .allowsHitTesting(false)
                 }
@@ -121,22 +115,23 @@ struct HUDView: View {
             
             // Controls view below camera
             HUDControlsView(
-                selectedCamera: $selectedCamera,
-                showPOIList: $showPOIList,
-                showCompass: $showCompass,
-                showHorizon: $showHorizon,
+                selectedCamera: $settings.selectedCamera,
+                showPOIList: $settings.showPOIList,
+                showCompass: $settings.showCompass,
+                showHorizon: $settings.showHorizon,
                 showFilterSheet: $showFilterSheet,
-                selectedPOITypes: selectedPOITypes,
-                maxPOIDistance: maxPOIDistance,
-                maxListDistance: maxListDistance
+                selectedPOITypes: settings.selectedPOITypes,
+                maxPOIDistance: settings.maxPOIDistance,
+                maxListDistance: settings.maxListDistance
             )
         }
         .ignoresSafeArea(edges: .top)
         .sheet(isPresented: $showFilterSheet) {
             POIFilterView(
-                selectedTypes: $selectedPOITypes,
-                maxDistance: $maxPOIDistance,
-                maxListDistance: $maxListDistance
+                selectedTypes: $settings.selectedPOITypes,
+                maxDistance: $settings.maxPOIDistance,
+                maxListDistance: $settings.maxListDistance,
+                distanceUnit: $settings.distanceUnit
             )
         }
         .task {
@@ -160,13 +155,13 @@ struct HUDView: View {
         .onChange(of: locationManager.trueHeading) { _, _ in
             updatePOIs()
         }
-        .onChange(of: selectedPOITypes) { _, _ in
+        .onChange(of: settings.selectedPOITypes) { _, _ in
             updatePOIs()
         }
-        .onChange(of: maxPOIDistance) { _, _ in
+        .onChange(of: settings.maxPOIDistance) { _, _ in
             updatePOIs()
         }
-        .onChange(of: maxListDistance) { _, _ in
+        .onChange(of: settings.maxListDistance) { _, _ in
             updatePOIs()
         }
         .onDisappear {
@@ -185,17 +180,17 @@ struct HUDView: View {
             from: location,
             heading: heading,
             fieldOfView: 60,
-            maxDistance: maxPOIDistance,
+            maxDistance: settings.maxPOIDistance,
             limit: 10,
-            typeFilter: selectedPOITypes
+            typeFilter: settings.selectedPOITypes
         )
         
         // Update nearby POIs for the list
         nearbyPOIs = POIVisibilityService.nearestPOIs(
             from: location,
-            maxDistance: maxListDistance,
+            maxDistance: settings.maxListDistance,
             limit: 10,
-            typeFilter: selectedPOITypes
+            typeFilter: settings.selectedPOITypes
         )
     }
 }

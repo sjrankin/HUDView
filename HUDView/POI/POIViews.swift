@@ -345,20 +345,70 @@ struct CompassBearingView: View {
                     }
                 }
                 
-                // Center indicator (crosshair)
-                VStack(spacing: 0) {
+                // Center indicator (crosshair) with heading display
+                VStack(spacing: 2) {
+                    // Numeric heading display with direction
+                    VStack(spacing: 0) {
+                        Text(formattedHeading)
+                            .font(.system(size: 14, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+                        
+                        Text(cardinalDirection)
+                            .font(.system(size: 9, weight: .semibold))
+                            .foregroundStyle(.white.opacity(0.9))
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(
+                        Capsule()
+                            .fill(.red.opacity(0.9))
+                            .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
+                    )
+                    
+                    // Red crosshair
                     Rectangle()
                         .fill(.red)
-                        .frame(width: 2, height: 20)
+                        .frame(width: 2, height: 10)
                     
                     Image(systemName: "arrowtriangle.down.fill")
                         .font(.caption2)
                         .foregroundStyle(.red)
+                        .shadow(color: .black.opacity(0.3), radius: 2)
                 }
                 .frame(maxWidth: .infinity)
             }
         }
         .frame(height: 50)
+    }
+    
+    private var formattedHeading: String {
+        let heading = Int(currentHeading.rounded())
+        return "\(heading)°"
+    }
+    
+    private var cardinalDirection: String {
+        let heading = currentHeading
+        
+        switch heading {
+        case 0..<22.5, 337.5...360:
+            return "N"
+        case 22.5..<67.5:
+            return "NE"
+        case 67.5..<112.5:
+            return "E"
+        case 112.5..<157.5:
+            return "SE"
+        case 157.5..<202.5:
+            return "S"
+        case 202.5..<247.5:
+            return "SW"
+        case 247.5..<292.5:
+            return "W"
+        case 292.5..<337.5:
+            return "NW"
+        default:
+            return "N"
+        }
     }
     
     private var compassMarkers: [CompassMarkerData] {
@@ -429,6 +479,29 @@ struct CompassMarker: View {
             return 0.7
         } else {
             return 0.3
+        }
+    }
+}
+
+#Preview("Compass Bearing View") {
+    ZStack {
+        Color.black.ignoresSafeArea()
+        
+        VStack {
+            CompassBearingView(currentHeading: 135)
+            
+            Spacer()
+            
+            VStack(spacing: 20) {
+                Text("Heading: 135° SE")
+                    .foregroundStyle(.white)
+                    .font(.title2)
+                
+                Text("The red indicator shows your current heading")
+                    .foregroundStyle(.white.opacity(0.7))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+            }
         }
     }
 }

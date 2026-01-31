@@ -210,13 +210,7 @@ struct POIVisibilityService {
         let bearingDifference: Double // degrees from camera heading
         
         var distanceFormatted: String {
-            if distance < 1000 {
-                return String(format: "%.0f m", distance)
-            } else if distance < 10000 {
-                return String(format: "%.1f km", distance / 1000)
-            } else {
-                return String(format: "%.0f km", distance / 1000)
-            }
+            HUDSettings.shared.distanceUnit.format(meters: distance)
         }
     }
     

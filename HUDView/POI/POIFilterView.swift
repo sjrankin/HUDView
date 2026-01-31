@@ -12,11 +12,26 @@ struct POIFilterView: View {
     @Binding var selectedTypes: Set<POIType>
     @Binding var maxDistance: Double
     @Binding var maxListDistance: Double
+    @Binding var distanceUnit: HUDSettings.DistanceUnit
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
         NavigationStack {
             List {
+                // Distance Unit Section
+                Section {
+                    Picker("Distance Unit", selection: $distanceUnit) {
+                        ForEach(HUDSettings.DistanceUnit.allCases, id: \.self) { unit in
+                            Text(unit.displayName).tag(unit)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                } header: {
+                    Text("Distance Unit")
+                } footer: {
+                    Text("Choose whether to display distances in kilometers or miles")
+                }
+                
                 // Distance Range Section
                 Section {
                     VStack(alignment: .leading, spacing: 12) {
@@ -141,18 +156,16 @@ struct POIFilterView: View {
     }
     
     private func formatDistance(_ meters: Double) -> String {
-        if meters < 1000 {
-            return String(format: "%.0f m", meters)
-        } else {
-            return String(format: "%.0f km", meters / 1000)
-        }
+        distanceUnit.format(meters: meters)
     }
     
     private func formatDistanceShort(_ meters: Double) -> String {
         if meters < 1000 {
-            return String(format: "%.0fm", meters)
+            let value = distanceUnit.convertSmall(meters: meters)
+            return String(format: "%.0f%@", value, distanceUnit.smallUnit)
         } else {
-            return String(format: "%.0fkm", meters / 1000)
+            let value = distanceUnit.convert(meters: meters)
+            return String(format: "%.0f%@", value, distanceUnit.abbreviation)
         }
     }
 }
@@ -202,10 +215,12 @@ struct POIFilterRow: View {
     @Previewable @State var selectedTypes: Set<POIType> = [.city, .mountain, .bridge]
     @Previewable @State var maxDistance: Double = 100_000
     @Previewable @State var maxListDistance: Double = 50_000
+    @Previewable @State var distanceUnit: HUDSettings.DistanceUnit = .metric
     
     POIFilterView(
         selectedTypes: $selectedTypes,
         maxDistance: $maxDistance,
-        maxListDistance: $maxListDistance
+        maxListDistance: $maxListDistance,
+        distanceUnit: $distanceUnit
     )
 }
