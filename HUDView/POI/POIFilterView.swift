@@ -39,19 +39,20 @@ struct POIFilterView: View {
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                         
-                        HStack {
-                            Text(formatDistance(maxDistance))
-                                .font(.headline)
-                                .frame(minWidth: 80, alignment: .leading)
-                            
-                            Slider(value: $maxDistance, in: 1000...10_000_000, step: 1000)
-                            
-                            Button {
-                                maxDistance = 100_000 // Reset to default
-                            } label: {
-                                Image(systemName: "arrow.counterclockwise")
-                                    .font(.caption)
+                        // Scrollable horizontal picker for distance presets
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                ForEach(HUDSettings.DistanceUnit.distancePresets, id: \.self) { distance in
+                                    DistanceButton(
+                                        distance: distance,
+                                        currentDistance: maxDistance,
+                                        distanceUnit: distanceUnit
+                                    ) {
+                                        maxDistance = distance
+                                    }
+                                }
                             }
+                            .padding(.vertical, 4)
                         }
                         
                         Text("Maximum distance for POIs shown on camera overlay")
@@ -65,19 +66,20 @@ struct POIFilterView: View {
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                         
-                        HStack {
-                            Text(formatDistance(maxListDistance))
-                                .font(.headline)
-                                .frame(minWidth: 80, alignment: .leading)
-                            
-                            Slider(value: $maxListDistance, in: 1000...10_000_000, step: 1000)
-                            
-                            Button {
-                                maxListDistance = 50_000 // Reset to default
-                            } label: {
-                                Image(systemName: "arrow.counterclockwise")
-                                    .font(.caption)
+                        // Scrollable horizontal picker for list distance presets
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                ForEach(HUDSettings.DistanceUnit.distancePresets, id: \.self) { distance in
+                                    DistanceButton(
+                                        distance: distance,
+                                        currentDistance: maxListDistance,
+                                        distanceUnit: distanceUnit
+                                    ) {
+                                        maxListDistance = distance
+                                    }
+                                }
                             }
+                            .padding(.vertical, 4)
                         }
                         
                         Text("Maximum distance for POIs shown in nearby list")
@@ -85,29 +87,10 @@ struct POIFilterView: View {
                             .foregroundStyle(.secondary)
                     }
                     .padding(.vertical, 4)
-                    
-                    // Quick distance presets
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            ForEach([10_000.0, 50_000.0, 100_000.0, 500_000.0, 1_000_000.0, 5_000_000.0, 10_000_000.0], id: \.self) { distance in
-                                Button {
-                                    maxDistance = distance
-                                    maxListDistance = min(distance, 1_000_000)
-                                } label: {
-                                    Text(formatDistanceShort(distance))
-                                        .font(.caption)
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 6)
-                                        .background(maxDistance == distance ? Color.blue : Color.secondary.opacity(0.2))
-                                        .foregroundStyle(maxDistance == distance ? .white : .primary)
-                                        .clipShape(Capsule())
-                                }
-                            }
-                        }
-                    }
-                    .padding(.vertical, 4)
                 } header: {
                     Text("Distance Range")
+                } footer: {
+                    Text("Scroll horizontally to see all distance options")
                 }
                 
                 // POI Categories Section
@@ -147,26 +130,69 @@ struct POIFilterView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") {
+                    Button {
                         dismiss()
+                    } label: {
+                        Text("Done")
+                            .fontWeight(.semibold)
                     }
                 }
             }
         }
-    }
-    
-    private func formatDistance(_ meters: Double) -> String {
-        distanceUnit.format(meters: meters)
-    }
-    
-    private func formatDistanceShort(_ meters: Double) -> String {
-        if meters < 1000 {
-            let value = distanceUnit.convertSmall(meters: meters)
-            return String(format: "%.0f%@", value, distanceUnit.smallUnit)
-        } else {
-            let value = distanceUnit.convert(meters: meters)
-            return String(format: "%.0f%@", value, distanceUnit.abbreviation)
+        .onAppear {
+            // Snap to nearest preset if current value isn't already a preset
+            maxDistance = snapToNearestPreset(maxDistance)
+            maxListDistance = snapToNearestPreset(maxListDistance)
         }
+    }
+    
+    /// Snap a distance value to the nearest preset
+    private func snapToNearestPreset(_ distance: Double) -> Double {
+        let presets = HUDSettings.DistanceUnit.distancePresets
+        
+        // If already a preset, return as-is
+        if presets.contains(distance) {
+            return distance
+        }
+        
+        // Find nearest preset
+        return presets.min(by: { abs($0 - distance) < abs($1 - distance) }) ?? distance
+    }
+    
+    /// Check if a distance matches a preset (with tolerance for floating point comparison)
+    private func isSelected(_ distance: Double, current: Double) -> Bool {
+        abs(distance - current) < 1.0 // Within 1 meter tolerance
+    }
+}
+
+/// A button for selecting distance presets with proper state tracking
+struct DistanceButton: View {
+    let distance: Double
+    let currentDistance: Double
+    let distanceUnit: HUDSettings.DistanceUnit
+    let action: () -> Void
+    
+    private var isSelected: Bool {
+        abs(distance - currentDistance) < 1.0
+    }
+    
+    var body: some View {
+        Text(distanceUnit.formatPreset(meters: distance))
+            .font(.callout)
+            .fontWeight(isSelected ? .semibold : .regular)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .background(isSelected ? Color.blue : Color.secondary.opacity(0.15))
+            .foregroundStyle(isSelected ? .white : .primary)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(isSelected ? Color.blue : Color.clear, lineWidth: 2)
+            )
+            .contentShape(Rectangle())
+            .onTapGesture {
+                action()
+            }
     }
 }
 

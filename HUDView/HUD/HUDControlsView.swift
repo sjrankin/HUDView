@@ -14,6 +14,7 @@ struct HUDControlsView: View {
     @Binding var showCompass: Bool
     @Binding var showHorizon: Bool
     @Binding var showFilterSheet: Bool
+    @Binding var showRadarView: Bool
     
     let selectedPOITypes: Set<POIType>
     let maxPOIDistance: Double
@@ -77,6 +78,18 @@ struct HUDControlsView: View {
                     .clipShape(Circle())
             }
             
+            // Show radar view button
+            Button {
+                showRadarView = true
+            } label: {
+                Image(systemName: "target")
+                    .font(.body)
+                    .foregroundStyle(.black)
+                    .padding(8)
+                    .background(.ultraThinMaterial)
+                    .clipShape(Circle())
+            }
+            
             // Filter POI types button
             Button {
                 showFilterSheet = true
@@ -111,6 +124,7 @@ struct HUDControlsView: View {
     @Previewable @State var showCompass = true
     @Previewable @State var showHorizon = true
     @Previewable @State var showFilterSheet = false
+    @Previewable @State var showRadarView = false
     
     HUDControlsView(
         selectedCamera: $selectedCamera,
@@ -118,6 +132,7 @@ struct HUDControlsView: View {
         showCompass: $showCompass,
         showHorizon: $showHorizon,
         showFilterSheet: $showFilterSheet,
+        showRadarView: $showRadarView,
         selectedPOITypes: Set(POIType.allCases),
         maxPOIDistance: 100_000,
         maxListDistance: 50_000

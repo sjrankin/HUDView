@@ -9,40 +9,51 @@ import SwiftUI
 import AVFoundation
 import CoreLocation
 
-struct HUDView: View {
+struct HUDView: View
+{
     @State private var cameraManager = CameraManager()
     @State private var locationManager = LocationManager()
     @State private var settings = HUDSettings.shared
     @State private var visiblePOIs: [POIVisibilityService.VisiblePOI] = []
     @State private var nearbyPOIs: [POIVisibilityService.VisiblePOI] = []
+    @State private var allRadarPOIs: [POIVisibilityService.VisiblePOI] = []
     @State private var showFilterSheet = false
+    @State private var showRadarView = false
     @Environment(\.verticalSizeClass) var verticalSizeClass
     
-    private var isLandscape: Bool {
+    private var isLandscape: Bool
+    {
         verticalSizeClass == .compact
     }
     
-    var body: some View {
-        ZStack {
+    var body: some View
+    {
+        ZStack
+        {
             // Camera fills entire screen (behind everything)
-            if cameraManager.isAuthorized {
+            if cameraManager.isAuthorized
+            {
                 CameraView(cameraPosition: settings.selectedCamera)
                     .id(settings.selectedCamera)
                     .ignoresSafeArea()
-            } else {
+            }
+            else
+            {
                 Color.black
                     .ignoresSafeArea()
             }
             
             // Main content VStack with explicit safe area handling
-            VStack(spacing: 0) {
+            VStack(spacing: 0)
+            {
                 // Top safe area spacer - uses window's safe area
                 Color.clear
                     .frame(height: max(0, ((UIApplication.shared.connectedScenes.first as? UIWindowScene)?
                         .windows.first?.safeAreaInsets.top ?? 0) - 16))
                 
                 // Top HUD elements
-                VStack(spacing: 0) {
+                VStack(spacing: 0)
+                {
                     // Compass bearing indicator at top
                     if settings.showCompass, let heading = locationManager.trueHeading, locationManager.isAuthorized {
                         CompassBearingView(currentHeading: heading)
@@ -51,7 +62,8 @@ struct HUDView: View {
                     }
                     
                     // POI list (optional)
-                    if settings.showPOIList && !nearbyPOIs.isEmpty && locationManager.isAuthorized {
+                    if settings.showPOIList && !nearbyPOIs.isEmpty && locationManager.isAuthorized
+                    {
                         POIListView(pois: nearbyPOIs)
                             .padding(.horizontal)
                             .padding(.top, 8)
@@ -62,7 +74,8 @@ struct HUDView: View {
                 Spacer()
                 
                 // Info panel with compass and coordinates
-                if locationManager.isAuthorized {
+                if locationManager.isAuthorized
+                {
                     HUDInfoPanel(
                         heading: locationManager.trueHeading,
                         compassDirection: locationManager.compassDirection,
@@ -81,6 +94,7 @@ struct HUDView: View {
                     showCompass: $settings.showCompass,
                     showHorizon: $settings.showHorizon,
                     showFilterSheet: $showFilterSheet,
+                    showRadarView: $showRadarView,
                     selectedPOITypes: settings.selectedPOITypes,
                     maxPOIDistance: settings.maxPOIDistance,
                     maxListDistance: settings.maxListDistance
@@ -88,7 +102,8 @@ struct HUDView: View {
             }
             
             // Horizon line overlay - positioned absolutely
-            if locationManager.isAuthorized, let heading = locationManager.trueHeading {
+            if locationManager.isAuthorized, let heading = locationManager.trueHeading
+            {
                 HorizonLineWithLabel(
                     currentHeading: heading,
                     userElevation: locationManager.altitude,
@@ -99,7 +114,8 @@ struct HUDView: View {
             }
             
             // POI markers overlay - positioned absolutely
-            if locationManager.isAuthorized && !visiblePOIs.isEmpty {
+            if locationManager.isAuthorized && !visiblePOIs.isEmpty
+            {
                 POIOverlayView(
                     visiblePOIs: visiblePOIs,
                     userElevation: locationManager.altitude
@@ -109,7 +125,8 @@ struct HUDView: View {
             }
             
             // Permission request overlay
-            if !cameraManager.isAuthorized {
+            if !cameraManager.isAuthorized
+            {
                 VStack(spacing: 20) {
                     Image(systemName: "camera.fill")
                         .font(.system(size: 60))
@@ -135,7 +152,8 @@ struct HUDView: View {
                 .padding()
             }
         }
-        .sheet(isPresented: $showFilterSheet) {
+        .sheet(isPresented: $showFilterSheet)
+        {
             POIFilterView(
                 selectedTypes: $settings.selectedPOITypes,
                 maxDistance: $settings.maxPOIDistance,
@@ -143,44 +161,72 @@ struct HUDView: View {
                 distanceUnit: $settings.distanceUnit
             )
         }
-        .task {
+        .sheet(isPresented: $showRadarView)
+        {
+            if let heading = locationManager.trueHeading {
+                RadarView(
+                    visiblePOIs: allRadarPOIs,
+                    currentHeading: heading,
+                    maxDistance: settings.maxPOIDistance,
+                    distanceUnit: settings.distanceUnit
+                )
+            }
+        }
+        .task
+        {
             // Request camera permission
-            if cameraManager.authorizationStatus == .notDetermined {
+            if cameraManager.authorizationStatus == .notDetermined
+            {
                 await cameraManager.requestPermission()
             }
             
             // Request location permission and start updates
-            if locationManager.authorizationStatus == .notDetermined {
+            if locationManager.authorizationStatus == .notDetermined
+            {
                 locationManager.requestPermission()
             }
             
-            if locationManager.isAuthorized {
+            if locationManager.isAuthorized
+            {
                 locationManager.startUpdating()
             }
         }
-        .onChange(of: locationManager.currentLocation) { _, _ in
+        .onChange(of: locationManager.currentLocation)
+        {
+            _, _ in
             updatePOIs()
         }
-        .onChange(of: locationManager.trueHeading) { _, _ in
+        .onChange(of: locationManager.trueHeading)
+        {
+            _, _ in
             updatePOIs()
         }
-        .onChange(of: settings.selectedPOITypes) { _, _ in
+        .onChange(of: settings.selectedPOITypes)
+        {
+            _, _ in
             updatePOIs()
         }
-        .onChange(of: settings.maxPOIDistance) { _, _ in
+        .onChange(of: settings.maxPOIDistance)
+        {
+            _, _ in
             updatePOIs()
         }
-        .onChange(of: settings.maxListDistance) { _, _ in
+        .onChange(of: settings.maxListDistance)
+        {
+            _, _ in
             updatePOIs()
         }
-        .onDisappear {
+        .onDisappear
+        {
             locationManager.stopUpdating()
         }
     }
     
-    private func updatePOIs() {
+    private func updatePOIs()
+    {
         guard let location = locationManager.currentLocation?.coordinate,
-              let heading = locationManager.trueHeading else {
+              let heading = locationManager.trueHeading else
+        {
             return
         }
         
@@ -201,9 +247,20 @@ struct HUDView: View {
             limit: 10,
             typeFilter: settings.selectedPOITypes
         )
+        
+        // Update all POIs for radar view (360° view, no field of view restriction)
+        allRadarPOIs = POIVisibilityService.visiblePOIs(
+            from: location,
+            heading: heading,
+            fieldOfView: 360, // Full circle for radar
+            maxDistance: settings.maxPOIDistance,
+            limit: 100, // Higher limit for radar
+            typeFilter: settings.selectedPOITypes
+        )
     }
 }
 
-#Preview {
+#Preview
+{
     HUDView()
 }

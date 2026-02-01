@@ -164,7 +164,7 @@ struct NorthernCaliforniaData {
     // MARK: - Test POIs
     
     static let testPOIs: [POI] = [
-        POI(name: "Home", latitude: 38.00665, longitude: 121.35991, type: .test, description: "Home"),
+        POI(name: "Home", latitude: 38.00665, longitude: -121.35991, type: .test, description: "Home"),
         POI(name: "Work", latitude: 37.521037, longitude: -122.256810, type: .test, description: "RWC Office"),
         POI(name: "Old House", latitude: 38.631662, longitude: -120.930632, type: .test, description: "Shingle Springs"),
     ]

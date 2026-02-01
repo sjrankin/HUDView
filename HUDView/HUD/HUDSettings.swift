@@ -86,6 +86,35 @@ class HUDSettings {
                 return String(format: "%.0f %@", value, abbreviation)
             }
         }
+        
+        /// Standard distance presets in meters
+        static let distancePresets: [Double] = [
+            1_000,      // 1 km / 0.62 mi
+            5_000,      // 5 km / 3.1 mi
+            10_000,     // 10 km / 6.2 mi
+            25_000,     // 25 km / 15.5 mi
+            50_000,     // 50 km / 31 mi
+            100_000,    // 100 km / 62 mi
+            200_000,    // 200 km / 124 mi
+            500_000,    // 500 km / 311 mi
+            1_000_000,  // 1000 km / 621 mi
+            5_000_000   // 5000 km / 3107 mi
+        ]
+        
+        /// Format preset distance for display in picker
+        func formatPreset(meters: Double) -> String {
+            let value = convert(meters: meters)
+            if value < 1 {
+                // For values less than 1 unit, show in smaller unit
+                return String(format: "%.0f %@", convertSmall(meters: meters), smallUnit)
+            } else if value >= 1000 {
+                // For very large values, show with commas
+                return String(format: "%.0f %@", value, abbreviation)
+            } else {
+                // Show whole numbers for most cases
+                return String(format: "%.0f %@", value, abbreviation)
+            }
+        }
     }
     
     private let defaults = UserDefaults.standard
