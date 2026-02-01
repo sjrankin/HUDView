@@ -36,32 +36,24 @@ enum POIType: String, CaseIterable {
     case bridge
     case park
     case lake
-    case bay
-    case island
-    case beach
     case forest
     case volcano
-    case valley
     case river
-    case canyon
     case test
+    case route
     
     var icon: String {
         switch self {
         case .city: return "building.2.fill"
-        case .mountain: return "mountain.2.fill"
-        case .bridge: return "point.topright.down.curvedto.point.bottomleft.up.fill"
+        case .mountain: return "triangle.fill"
+        case .bridge: return "water.waves.and.arrow.trianglehead.up"
         case .park: return "tree.fill"
         case .lake: return "drop.fill"
-        case .bay: return "water.waves"
-        case .island: return "location.fill"
-        case .beach: return "beach.umbrella.fill"
         case .forest: return "tree.fill"
-        case .volcano: return "mountain.2.fill"
-        case .valley: return "mountain.2.fill"
+        case .volcano: return "triangle.fill"
         case .river: return "water.waves"
-        case .canyon: return "mountain.2.fill"
         case .test: return "testtube.2"
+        case .route: return "mappin.and.ellipse"
         }
     }
     
@@ -71,14 +63,11 @@ enum POIType: String, CaseIterable {
         case .mountain: return "brown"
         case .bridge: return "red"
         case .park: return "green"
-        case .lake, .bay, .river: return "blue"
-        case .island: return "mint"
-        case .beach: return "cyan"
+        case .lake, .river: return "blue"
         case .forest: return "green"
         case .volcano: return "red"
-        case .valley: return "brown"
-        case .canyon: return "orange"
         case .test: return "purple"
+            case .route: return "black"
         }
     }
     
@@ -89,15 +78,11 @@ enum POIType: String, CaseIterable {
         case .bridge: return "Bridges"
         case .park: return "Parks"
         case .lake: return "Lakes"
-        case .bay: return "Bays"
-        case .island: return "Islands"
-        case .beach: return "Beaches"
         case .forest: return "Forests"
         case .volcano: return "Volcanoes"
-        case .valley: return "Valleys"
         case .river: return "Rivers"
-        case .canyon: return "Canyons"
         case .test: return "Test"
+            case .route: return "Route Waypoint"
         }
     }
 }
@@ -105,7 +90,7 @@ enum POIType: String, CaseIterable {
 /// Database of Northern California landmarks and cities
 struct NorthernCaliforniaData {
     
-    // MARK: - Major Cities (Population > 50,000)
+    // MARK: - Major Cities
     
     static let cities: [POI] = [
         // Bay Area
@@ -130,9 +115,9 @@ struct NorthernCaliforniaData {
         POI(name: "Washington DC", latitude: 38.9073, longitude: -77.0369, type: .city, population: 702_250),
         
         // Japan
-        POI(name: "Sapporo", latitude: 43.0618, longitude: 141.3545, type: .city, population: 1_967_361),
-        POI(name: "Yubari", latitude: 43.0568, longitude: 141.9739, type: .city, population: 6_374),
-        POI(name: "Tokyo", latitude: 35.6764, longitude: 139.6500, type: .city, population: 14_000_000),
+        POI(name: "札幌", latitude: 43.0618, longitude: 141.3545, type: .city, population: 1_967_361),
+        POI(name: "夕張", latitude: 43.0568, longitude: 141.9739, type: .city, population: 6_374),
+        POI(name: "東京", latitude: 35.6764, longitude: 139.6500, type: .city, population: 14_000_000),
         
         // Foothills
         POI(name: "Placerville", latitude: 38.7296, longitude: -120.7985, type: .city, population: 10_747),
@@ -168,18 +153,12 @@ struct NorthernCaliforniaData {
         POI(name: "Dumbarton Bridge", latitude: 37.5048, longitude: -122.1204, type: .bridge),
         
         // Parks
-        POI(name: "Yosemite NP", latitude: 37.8651, longitude: -119.5383, type: .park),
+        POI(name: "Yosemite", latitude: 37.8651, longitude: -119.5383, type: .park),
         POI(name: "Point Reyes", latitude: 38.0467, longitude: -122.8794, type: .park),
         POI(name: "Muir Woods", latitude: 37.8916, longitude: -122.5808, type: .forest),
         
         // Water Features
         POI(name: "Lake Tahoe", latitude: 39.0968, longitude: -120.0324, type: .lake, elevation: 1897),
-        POI(name: "San Francisco Bay", latitude: 37.7850, longitude: -122.3100, type: .bay),
-        POI(name: "Monterey Bay", latitude: 36.8028, longitude: -121.9000, type: .bay),
-        
-        // Islands
-        POI(name: "Alcatraz Island", latitude: 37.8267, longitude: -122.4230, type: .island),
-        POI(name: "Angel Island", latitude: 37.8604, longitude: -122.4327, type: .island),
     ]
     
     // MARK: - Test POIs
@@ -190,10 +169,40 @@ struct NorthernCaliforniaData {
         POI(name: "Old House", latitude: 38.631662, longitude: -120.930632, type: .test, description: "Shingle Springs"),
     ]
     
+    // MARK: - Route Waypoints
+    static let routePOIs: [POI] = [
+        POI(name: "Waypoint 1", latitude: 38.005653, longitude: -121.360298, type: .route),
+        POI(name: "Waypoint 2", latitude: 38.000609, longitude: -121.349935, type: .route),
+        POI(name: "Waypoint 3", latitude: 37.932380, longitude: -121.296659, type: .route),
+        POI(name: "Waypoint 4", latitude: 37.882020, longitude: -121.279022, type: .route),
+        POI(name: "Waypoint 5", latitude: 37.793492, longitude: -121.300949, type: .route),
+        POI(name: "Waypoint 6", latitude: 37.766958, longitude: -121.335665, type: .route),
+        POI(name: "Waypoint 7", latitude: 37.740780, longitude: -121.503701, type: .route),
+        POI(name: "Waypoint 8", latitude: 37.741743, longitude: -121.576895, type: .route),
+        POI(name: "Waypoint 9", latitude: 37.719399, longitude: -121.660617, type: .route),
+        POI(name: "Waypoint 10", latitude: 37.716279, longitude: -121.706935, type: .route),
+        POI(name: "Waypoint 11", latitude: 37.698467, longitude: -121.935376, type: .route),
+        POI(name: "Waypoint 12", latitude: 37.693642, longitude: -122.050785, type: .route),
+        POI(name: "Waypoint 13", latitude: 37.690452, longitude: -122.091166, type: .route),
+        POI(name: "Waypoint 14", latitude: 37.690492, longitude: -122.124317, type: .route),
+        POI(name: "Waypoint 15", latitude: 37.684441, longitude: -122.129159, type: .route),
+        POI(name: "Waypoint 16", latitude: 37.662685, longitude: -122.105619, type: .route),
+        POI(name: "Waypoint 17", latitude: 37.642953, longitude: -122.095042, type: .route),
+        POI(name: "Waypoint 18", latitude: 37.619624, longitude: -122.146809, type: .route),
+        POI(name: "Waypoint 19", latitude: 37.615711, longitude: -122.159631, type: .route),
+        POI(name: "Waypoint 20", latitude: 37.593468, longitude: -122.234334, type: .route),
+        POI(name: "Waypoint 21", latitude: 37.571266, longitude: -122.265079, type: .route),
+        POI(name: "Waypoint 22", latitude: 37.553470, longitude: -122.295481, type: .route),
+        POI(name: "Waypoint 23", latitude: 37.549730, longitude: -122.292932, type: .route),
+        POI(name: "Waypoint 24", latitude: 37.527708, longitude: -122.272225, type: .route),
+        POI(name: "Waypoint 25", latitude: 37.528499, longitude: -122.263890, type: .route),
+        POI(name: "Waypoint 26", latitude: 37.521119, longitude: -122.258117, type: .route),
+    ]
+    
     // MARK: - Combined Data
     
     static var allPOIs: [POI] {
-        cities + landmarks + testPOIs
+        cities + landmarks + testPOIs + routePOIs
     }
 }
 

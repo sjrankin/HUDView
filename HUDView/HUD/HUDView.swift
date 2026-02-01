@@ -12,7 +12,6 @@ import CoreLocation
 struct HUDView: View {
     @State private var cameraManager = CameraManager()
     @State private var locationManager = LocationManager()
-    @State private var motionManager = MotionManager()
     @State private var settings = HUDSettings.shared
     @State private var visiblePOIs: [POIVisibilityService.VisiblePOI] = []
     @State private var nearbyPOIs: [POIVisibilityService.VisiblePOI] = []
@@ -72,7 +71,6 @@ struct HUDView: View {
                     HorizonLineWithLabel(
                         currentHeading: heading,
                         userElevation: locationManager.altitude,
-                        devicePitch: motionManager.pitchDegrees,
                         showHorizon: $settings.showHorizon
                     )
                     .allowsHitTesting(false)
@@ -82,40 +80,11 @@ struct HUDView: View {
                 if locationManager.isAuthorized && !visiblePOIs.isEmpty {
                     POIOverlayView(
                         visiblePOIs: visiblePOIs,
-                        userElevation: locationManager.altitude,
-                        devicePitch: motionManager.pitchDegrees
+                        userElevation: locationManager.altitude
                     )
                     .allowsHitTesting(false)
                 }
                 
-                // Debug pitch display (top-right corner)
-                VStack {
-                    HStack {
-                        Spacer()
-                        VStack(alignment: .trailing, spacing: 4) {
-                            Text("Pitch: \(motionManager.pitchDegrees, specifier: "%.1f")°")
-                                .font(.caption)
-                                .foregroundStyle(.white)
-                            Text("Roll: \(motionManager.rollDegrees, specifier: "%.1f")°")
-                                .font(.caption)
-                                .foregroundStyle(.white)
-                            if let elev = locationManager.altitude {
-                                Text("Alt: \(elev, specifier: "%.0f")m")
-                                    .font(.caption)
-                                    .foregroundStyle(.white)
-                            }
-                            Text("POIs: \(visiblePOIs.count)")
-                                .font(.caption)
-                                .foregroundStyle(.white)
-                        }
-                        .padding(8)
-                        .background(.black.opacity(0.6))
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                        .padding()
-                    }
-                    Spacer()
-                }
-                .allowsHitTesting(false)
                 
                 // Permission request overlay
                 if !cameraManager.isAuthorized {
@@ -180,11 +149,6 @@ struct HUDView: View {
             if locationManager.isAuthorized {
                 locationManager.startUpdating()
             }
-            
-            // Start motion updates
-            if motionManager.isAvailable {
-                motionManager.startUpdating()
-            }
         }
         .onChange(of: locationManager.currentLocation) { _, _ in
             updatePOIs()
@@ -203,7 +167,6 @@ struct HUDView: View {
         }
         .onDisappear {
             locationManager.stopUpdating()
-            motionManager.stopUpdating()
         }
     }
     
