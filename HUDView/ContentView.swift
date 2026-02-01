@@ -9,10 +9,8 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        VStack {
-            HUDView()
-        }
-        .padding()
+        HUDView()
+            .ignoresSafeArea() // Ensure full-screen camera in all orientations
     }
 }
 

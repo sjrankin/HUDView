@@ -23,22 +23,30 @@ struct HUDView: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Camera view with overlays
-            ZStack {
-                // Camera preview background
-                if cameraManager.isAuthorized {
-                    CameraView(cameraPosition: settings.selectedCamera)
-                        .id(settings.selectedCamera) // Forces view recreation when camera changes
-                } else {
-                    Color.black
-                }
+        ZStack {
+            // Camera fills entire screen (behind everything)
+            if cameraManager.isAuthorized {
+                CameraView(cameraPosition: settings.selectedCamera)
+                    .id(settings.selectedCamera)
+                    .ignoresSafeArea()
+            } else {
+                Color.black
+                    .ignoresSafeArea()
+            }
+            
+            // Main content VStack with explicit safe area handling
+            VStack(spacing: 0) {
+                // Top safe area spacer - uses window's safe area
+                Color.clear
+                    .frame(height: max(0, ((UIApplication.shared.connectedScenes.first as? UIWindowScene)?
+                        .windows.first?.safeAreaInsets.top ?? 0) - 16))
                 
-                // HUD overlay
-                VStack {
+                // Top HUD elements
+                VStack(spacing: 0) {
                     // Compass bearing indicator at top
                     if settings.showCompass, let heading = locationManager.trueHeading, locationManager.isAuthorized {
                         CompassBearingView(currentHeading: heading)
+                            .padding(.top, 8)
                             .transition(.move(edge: .top))
                     }
                     
@@ -49,84 +57,84 @@ struct HUDView: View {
                             .padding(.top, 8)
                             .transition(.move(edge: .top).combined(with: .opacity))
                     }
-                    
-                    Spacer()
-                    
-                    // Info panel with compass and coordinates
-                    if locationManager.isAuthorized {
-                        HUDInfoPanel(
-                            heading: locationManager.trueHeading,
-                            compassDirection: locationManager.compassDirection,
-                            latitude: locationManager.latitude,
-                            longitude: locationManager.longitude,
-                            altitude: locationManager.altitude
-                        )
-                        .padding(.horizontal)
-                        .padding(.bottom, 8)
-                    }
                 }
                 
-                // Horizon line overlay
-                if locationManager.isAuthorized, let heading = locationManager.trueHeading {
-                    HorizonLineWithLabel(
-                        currentHeading: heading,
-                        userElevation: locationManager.altitude,
-                        showHorizon: $settings.showHorizon
+                Spacer()
+                
+                // Info panel with compass and coordinates
+                if locationManager.isAuthorized {
+                    HUDInfoPanel(
+                        heading: locationManager.trueHeading,
+                        compassDirection: locationManager.compassDirection,
+                        latitude: locationManager.latitude,
+                        longitude: locationManager.longitude,
+                        altitude: locationManager.altitude
                     )
-                    .allowsHitTesting(false)
+                    .padding(.horizontal)
+                    .padding(.bottom, 8)
                 }
                 
-                // POI markers overlaid on camera view (directional points with elevation correction)
-                if locationManager.isAuthorized && !visiblePOIs.isEmpty {
-                    POIOverlayView(
-                        visiblePOIs: visiblePOIs,
-                        userElevation: locationManager.altitude
-                    )
-                    .allowsHitTesting(false)
-                }
-                
-                
-                // Permission request overlay
-                if !cameraManager.isAuthorized {
-                    VStack(spacing: 20) {
-                        Image(systemName: "camera.fill")
-                            .font(.system(size: 60))
-                            .foregroundStyle(.white)
-                        
-                        Text("Camera Access Required")
-                            .font(.title2)
-                            .foregroundStyle(.white)
-                        
-                        Text("Please allow access to the camera to use this feature.")
-                            .multilineTextAlignment(.center)
-                            .foregroundStyle(.white.opacity(0.8))
-                            .padding(.horizontal)
-                        
-                        Button("Allow Camera Access") {
-                            Task {
-                                await cameraManager.requestPermission()
-                            }
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .padding(.top)
-                    }
-                    .padding()
-                }
+                // Controls view at bottom
+                HUDControlsView(
+                    selectedCamera: $settings.selectedCamera,
+                    showPOIList: $settings.showPOIList,
+                    showCompass: $settings.showCompass,
+                    showHorizon: $settings.showHorizon,
+                    showFilterSheet: $showFilterSheet,
+                    selectedPOITypes: settings.selectedPOITypes,
+                    maxPOIDistance: settings.maxPOIDistance,
+                    maxListDistance: settings.maxListDistance
+                )
             }
             
-            // Controls view below camera
-            HUDControlsView(
-                selectedCamera: $settings.selectedCamera,
-                showPOIList: $settings.showPOIList,
-                showCompass: $settings.showCompass,
-                showHorizon: $settings.showHorizon,
-                showFilterSheet: $showFilterSheet,
-                selectedPOITypes: settings.selectedPOITypes,
-                maxPOIDistance: settings.maxPOIDistance,
-                maxListDistance: settings.maxListDistance
-            )
+            // Horizon line overlay - positioned absolutely
+            if locationManager.isAuthorized, let heading = locationManager.trueHeading {
+                HorizonLineWithLabel(
+                    currentHeading: heading,
+                    userElevation: locationManager.altitude,
+                    showHorizon: $settings.showHorizon
+                )
+                .allowsHitTesting(false)
+                .ignoresSafeArea()
+            }
+            
+            // POI markers overlay - positioned absolutely
+            if locationManager.isAuthorized && !visiblePOIs.isEmpty {
+                POIOverlayView(
+                    visiblePOIs: visiblePOIs,
+                    userElevation: locationManager.altitude
+                )
+                .allowsHitTesting(false)
+                .ignoresSafeArea()
+            }
+            
+            // Permission request overlay
+            if !cameraManager.isAuthorized {
+                VStack(spacing: 20) {
+                    Image(systemName: "camera.fill")
+                        .font(.system(size: 60))
+                        .foregroundStyle(.white)
+                    
+                    Text("Camera Access Required")
+                        .font(.title2)
+                        .foregroundStyle(.white)
+                    
+                    Text("Please allow access to the camera to use this feature.")
+                        .multilineTextAlignment(.center)
+                        .foregroundStyle(.white.opacity(0.8))
+                        .padding(.horizontal)
+                    
+                    Button("Allow Camera Access") {
+                        Task {
+                            await cameraManager.requestPermission()
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .padding(.top)
+                }
+                .padding()
+            }
         }
-        .ignoresSafeArea(edges: .top)
         .sheet(isPresented: $showFilterSheet) {
             POIFilterView(
                 selectedTypes: $settings.selectedPOITypes,

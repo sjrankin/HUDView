@@ -40,16 +40,70 @@ class CameraPreviewView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupCamera()
+        setupOrientationObserver()
     }
     
     required init?(coder: NSCoder) {
         super.init(coder: coder)
         setupCamera()
+        setupOrientationObserver()
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
     
     override func layoutSubviews() {
         super.layoutSubviews()
         previewLayer?.frame = bounds
+        updateVideoOrientation()
+    }
+    
+    private func setupOrientationObserver() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(orientationDidChange),
+            name: UIDevice.orientationDidChangeNotification,
+            object: nil
+        )
+    }
+    
+    @objc private func orientationDidChange() {
+        DispatchQueue.main.async {
+            self.updateVideoOrientation()
+        }
+    }
+    
+    private func updateVideoOrientation() {
+        guard let connection = previewLayer?.connection else {
+            return
+        }
+        
+        // Get the current interface orientation from the window scene
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else {
+            return
+        }
+        
+        let interfaceOrientation = windowScene.interfaceOrientation
+        
+        // Map interface orientation to video orientation
+        let videoOrientation: AVCaptureVideoOrientation
+        switch interfaceOrientation {
+        case .portrait:
+            videoOrientation = .portrait
+        case .portraitUpsideDown:
+            videoOrientation = .portraitUpsideDown
+        case .landscapeLeft:
+            videoOrientation = .landscapeLeft
+        case .landscapeRight:
+            videoOrientation = .landscapeRight
+        case .unknown:
+            videoOrientation = .portrait
+        @unknown default:
+            videoOrientation = .portrait
+        }
+        
+        connection.videoOrientation = videoOrientation
     }
     
     func setupCamera() {
@@ -100,6 +154,9 @@ class CameraPreviewView: UIView {
                     
                     self.previewLayer = preview
                     self.captureSession = session
+                    
+                    // Set initial video orientation to match current device orientation
+                    self.updateVideoOrientation()
                     
                     // Start session on background queue
                     self.sessionQueue.async {
