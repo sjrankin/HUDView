@@ -9,13 +9,13 @@ import CoreLocation
 import SwiftUI
 
 /// Manages location services and compass heading
-@MainActor
-@Observable
-class LocationManager: NSObject {
+@MainActor @Observable class LocationManager: NSObject
+{
     private let locationManager = CLLocationManager()
     
     var authorizationStatus: CLAuthorizationStatus = .notDetermined
-    var isAuthorized: Bool {
+    var isAuthorized: Bool
+    {
         authorizationStatus == .authorizedWhenInUse || authorizationStatus == .authorizedAlways
     }
     
@@ -23,29 +23,39 @@ class LocationManager: NSObject {
     var currentHeading: CLHeading?
     
     // Computed properties for easy access
-    var latitude: Double? {
+    var latitude: Double?
+    {
         currentLocation?.coordinate.latitude
     }
     
-    var longitude: Double? {
+    var longitude: Double?
+    {
         currentLocation?.coordinate.longitude
     }
     
-    var altitude: Double? {
+    var altitude: Double?
+    {
         currentLocation?.altitude
     }
     
-    var trueHeading: Double? {
-        guard let heading = currentHeading?.trueHeading, heading >= 0 else {
+    var trueHeading: Double?
+    {
+        guard let heading = currentHeading?.trueHeading, heading >= 0 else
+        {
             return currentHeading?.magneticHeading
         }
         return heading
     }
     
-    var compassDirection: String {
-        guard let heading = trueHeading else { return "—" }
+    var compassDirection: String
+    {
+        guard let heading = trueHeading else
+        {
+            return "—"
+        }
         
-        switch heading {
+        switch heading
+        {
         case 0..<22.5, 337.5...360:
             return "N"
         case 22.5..<67.5:
@@ -67,7 +77,8 @@ class LocationManager: NSObject {
         }
     }
     
-    override init() {
+    override init()
+    {
         super.init()
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
@@ -76,51 +87,72 @@ class LocationManager: NSObject {
     }
     
     /// Request location permission
-    func requestPermission() {
+    func requestPermission()
+    {
         locationManager.requestWhenInUseAuthorization()
     }
     
     /// Start updating location and heading
-    func startUpdating() {
+    func startUpdating()
+    {
         guard isAuthorized else { return }
         locationManager.startUpdatingLocation()
-        if CLLocationManager.headingAvailable() {
+        if CLLocationManager.headingAvailable()
+        {
             locationManager.startUpdatingHeading()
         }
     }
     
     /// Stop updating location and heading
-    func stopUpdating() {
+    func stopUpdating()
+    {
         locationManager.stopUpdatingLocation()
         locationManager.stopUpdatingHeading()
     }
 }
 
 // MARK: - CLLocationManagerDelegate
-extension LocationManager: CLLocationManagerDelegate {
-    nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let location = locations.last else { return }
-        Task { @MainActor in
+extension LocationManager: CLLocationManagerDelegate
+{
+    nonisolated func locationManager(_ manager: CLLocationManager,
+                                     didUpdateLocations locations: [CLLocation])
+    {
+        guard let location = locations.last else
+        {
+            return
+        }
+        Task
+        {
+            @MainActor in
             self.currentLocation = location
         }
     }
     
-    nonisolated func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
-        Task { @MainActor in
+    nonisolated func locationManager(_ manager: CLLocationManager,
+                                     didUpdateHeading newHeading: CLHeading)
+    {
+        Task
+        {
+            @MainActor in
             self.currentHeading = newHeading
         }
     }
     
-    nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        Task { @MainActor in
+    nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager)
+    {
+        Task
+        {
+            @MainActor in
             self.authorizationStatus = manager.authorizationStatus
-            if self.isAuthorized {
+            if self.isAuthorized
+            {
                 self.startUpdating()
             }
         }
     }
     
-    nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+    nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error)
+    {
         print("Location manager error: \(error.localizedDescription)")
     }
 }

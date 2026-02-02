@@ -8,19 +8,26 @@
 import SwiftUI
 
 /// Draws a horizon line representing local elevation
-struct HorizonLineView: View {
+struct HorizonLineView: View
+{
     let currentHeading: Double
     let userElevation: Double?
     
-    var body: some View {
-        GeometryReader { geometry in
-            Canvas { context, size in
+    var body: some View
+    {
+        GeometryReader
+        {
+            geometry in
+            Canvas
+            {
+                context, size in
                 drawHorizonLine(context: context, size: size)
             }
         }
     }
     
-    private func drawHorizonLine(context: GraphicsContext, size: CGSize) {
+    private func drawHorizonLine(context: GraphicsContext, size: CGSize)
+    {
         let centerY = size.height * 0.5
         
         // Calculate horizon position based on user elevation
@@ -40,7 +47,9 @@ struct HorizonLineView: View {
         let y = centerY - offset
         
         // Create straight horizontal line
-        let path = Path { path in
+        let path = Path
+        {
+            path in
             path.move(to: CGPoint(x: 0, y: y))
             path.addLine(to: CGPoint(x: size.width, y: y))
         }
@@ -61,7 +70,8 @@ struct HorizonLineView: View {
     }
     
     /// Calculate the horizon elevation angle based on user elevation
-    private func calculateHorizonElevation(userElevation: Double) -> Double {
+    private func calculateHorizonElevation(userElevation: Double) -> Double
+    {
         // Calculate true geometric horizon based on Earth's curvature
         let earthRadius: Double = 6_371_000 // meters
         
@@ -80,14 +90,18 @@ struct HorizonLineView: View {
 }
 
 /// Horizon line with label
-struct HorizonLineWithLabel: View {
+struct HorizonLineWithLabel: View
+{
     let currentHeading: Double
     let userElevation: Double?
     @Binding var showHorizon: Bool
     
-    var body: some View {
-        Group {
-            if showHorizon {
+    var body: some View
+    {
+        Group
+        {
+            if showHorizon
+            {
                 HorizonLineView(
                     currentHeading: currentHeading,
                     userElevation: userElevation
@@ -97,7 +111,8 @@ struct HorizonLineWithLabel: View {
     }
 }
 
-#Preview {
+#Preview
+{
     @Previewable @State var showHorizon = true
     ZStack {
         Color.black.ignoresSafeArea()

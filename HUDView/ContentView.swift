@@ -7,13 +7,16 @@
 
 import SwiftUI
 
-struct ContentView: View {
-    var body: some View {
+struct ContentView: View
+{
+    var body: some View
+    {
         HUDView()
             .ignoresSafeArea() // Ensure full-screen camera in all orientations
     }
 }
 
-#Preview {
+#Preview
+{
     ContentView()
 }

@@ -8,7 +8,8 @@
 import SwiftUI
 import CoreLocation
 
-struct RadarView: View {
+struct RadarView: View
+{
     let visiblePOIs: [POIVisibilityService.VisiblePOI]
     let currentHeading: Double
     let maxDistance: Double
@@ -17,18 +18,27 @@ struct RadarView: View {
     
     private let ringCount = 4
     
-    var body: some View {
-        NavigationStack {
-            GeometryReader { geometry in
+    var body: some View
+    {
+        NavigationStack
+        {
+            GeometryReader
+            {
+                geometry in
                 radarContent(geometry: geometry)
             }
             .navigationTitle("Radar View")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button {
+            .toolbar
+            {
+                ToolbarItem(placement: .confirmationAction)
+                {
+                    Button
+                    {
                         dismiss()
-                    } label: {
+                    }
+                label:
+                    {
                         Text("Done")
                             .fontWeight(.semibold)
                             .foregroundColor(.green)
@@ -43,11 +53,13 @@ struct RadarView: View {
     @State private var pulseScale: CGFloat = 1.0
     @State private var pulseOpacity: Double = 0.0
     
-    private func radarContent(geometry: GeometryProxy) -> some View {
+    private func radarContent(geometry: GeometryProxy) -> some View
+    {
         let size = min(geometry.size.width, geometry.size.height) * 0.85
         let center = CGPoint(x: geometry.size.width / 2, y: geometry.size.height / 2)
         
-        return ZStack {
+        return ZStack
+        {
             Color.black.ignoresSafeArea()
             
             radarDisplay(size: size, center: center)
@@ -55,9 +67,11 @@ struct RadarView: View {
             infoOverlay
             
             // Debug info at bottom
-            VStack {
+            VStack
+            {
                 Spacer()
-                if visiblePOIs.isEmpty {
+                if visiblePOIs.isEmpty
+                {
                     Text("No POIs found in \(distanceUnit.format(meters: maxDistance)) radius")
                         .font(.caption)
                         .foregroundColor(.red)
@@ -70,48 +84,49 @@ struct RadarView: View {
         }
     }
     
-    private func radarDisplay(size: CGFloat, center: CGPoint) -> some View {
-        ZStack {
+    private func radarDisplay(size: CGFloat, center: CGPoint) -> some View
+    {
+        ZStack
+        {
             backgroundCircle(size: size)
-            
             concentricRings(size: size, center: center)
-            
             cardinalLines(size: size, center: center)
-            
             headingIndicator(size: size, center: center)
-            
             northLabel(size: size, center: center)
-            
             poiMarkers(size: size, center: center)
-            
             userLocationMarker(size: size)
-            
             pulsingEffect(size: size)
         }
         .frame(width: size, height: size)
         .position(center)
     }
     
-    private func backgroundCircle(size: CGFloat) -> some View {
+    private func backgroundCircle(size: CGFloat) -> some View
+    {
         Circle()
             .fill(Color.green.opacity(0.1))
             .frame(width: size, height: size)
     }
     
-    private func concentricRings(size: CGFloat, center: CGPoint) -> some View {
-        ForEach(1...ringCount, id: \.self) { ring in
+    private func concentricRings(size: CGFloat, center: CGPoint) -> some View
+    {
+        ForEach(1...ringCount, id: \.self)
+        {
+            ring in
             ringView(ring: ring, size: size, center: center)
         }
     }
     
-    private func ringView(ring: Int, size: CGFloat, center: CGPoint) -> some View {
+    private func ringView(ring: Int, size: CGFloat, center: CGPoint) -> some View
+    {
         let ringSize = size * CGFloat(ring) / CGFloat(ringCount)
         let ringDistance = maxDistance * Double(ring) / Double(ringCount)
         
         // Use radar's own coordinate space
         let radarCenter = CGPoint(x: size / 2, y: size / 2)
         
-        return ZStack {
+        return ZStack
+        {
             Circle()
                 .stroke(Color.green.opacity(0.3), lineWidth: 1)
                 .frame(width: ringSize, height: ringSize)
@@ -123,10 +138,13 @@ struct RadarView: View {
         }
     }
     
-    private func cardinalLines(size: CGFloat, center: CGPoint) -> some View {
+    private func cardinalLines(size: CGFloat, center: CGPoint) -> some View
+    {
         let radarCenter = CGPoint(x: size / 2, y: size / 2)
         
-        return Path { path in
+        return Path
+        {
+            path in
             // North-South
             path.move(to: CGPoint(x: radarCenter.x, y: radarCenter.y - size / 2))
             path.addLine(to: CGPoint(x: radarCenter.x, y: radarCenter.y + size / 2))
@@ -138,21 +156,25 @@ struct RadarView: View {
         .stroke(Color.green.opacity(0.2), lineWidth: 1)
     }
     
-    private func headingIndicator(size: CGFloat, center: CGPoint) -> some View {
+    private func headingIndicator(size: CGFloat, center: CGPoint) -> some View
+    {
         let radarCenter = CGPoint(x: size / 2, y: size / 2)
         let angle = -currentHeading * .pi / 180
         let length = size / 2
         let endX = radarCenter.x + length * sin(angle)
         let endY = radarCenter.y - length * cos(angle)
         
-        return Path { path in
+        return Path
+        {
+            path in
             path.move(to: radarCenter)
             path.addLine(to: CGPoint(x: endX, y: endY))
         }
         .stroke(Color.yellow.opacity(0.8), lineWidth: 2)
     }
     
-    private func northLabel(size: CGFloat, center: CGPoint) -> some View {
+    private func northLabel(size: CGFloat, center: CGPoint) -> some View
+    {
         let radarCenter = CGPoint(x: size / 2, y: size / 2)
         let angle = -currentHeading * .pi / 180
         let xPos = radarCenter.x + (size / 2 + 20) * sin(angle)
@@ -165,15 +187,20 @@ struct RadarView: View {
             .position(x: xPos, y: yPos)
     }
     
-    private func poiMarkers(size: CGFloat, center: CGPoint) -> some View {
-        ForEach(visiblePOIs.indices, id: \.self) { index in
+    private func poiMarkers(size: CGFloat, center: CGPoint) -> some View
+    {
+        ForEach(visiblePOIs.indices, id: \.self)
+        {
+            index in
             poiMarkerView(poi: visiblePOIs[index], size: size, center: center)
         }
     }
     
-    @ViewBuilder
-    private func poiMarkerView(poi: POIVisibilityService.VisiblePOI, size: CGFloat, center: CGPoint) -> some View {
-        if poi.distance <= maxDistance {
+    @ViewBuilder private func poiMarkerView(poi: POIVisibilityService.VisiblePOI, size: CGFloat,
+                                            center: CGPoint) -> some View
+    {
+        if poi.distance <= maxDistance
+        {
             // Calculate position relative to radar's own coordinate space (center of radar)
             let radarCenter = CGPoint(x: size / 2, y: size / 2)
             let position = calculatePOIPosition(
@@ -189,7 +216,8 @@ struct RadarView: View {
         }
     }
     
-    private func userLocationMarker(size: CGFloat) -> some View {
+    private func userLocationMarker(size: CGFloat) -> some View
+    {
         Circle()
             .fill(Color.blue)
             .frame(width: 12, height: 12)
@@ -200,7 +228,8 @@ struct RadarView: View {
             .position(x: size / 2, y: size / 2)
     }
     
-    private func pulsingEffect(size: CGFloat) -> some View {
+    private func pulsingEffect(size: CGFloat) -> some View
+    {
         Circle()
             .stroke(Color.blue.opacity(0.5), lineWidth: 2)
             .frame(width: 20, height: 20)
@@ -212,10 +241,14 @@ struct RadarView: View {
             }
     }
     
-    private var infoOverlay: some View {
-        VStack {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
+    private var infoOverlay: some View
+    {
+        VStack
+        {
+            HStack
+            {
+                VStack(alignment: .leading, spacing: 4)
+                {
                     Text("Heading: \(Int(currentHeading))°")
                         .font(.caption)
                         .foregroundColor(.green)
@@ -243,20 +276,19 @@ struct RadarView: View {
         }
     }
     
-    private func startPulseAnimation() {
-        withAnimation(Animation.easeOut(duration: 1.5).repeatForever(autoreverses: false)) {
+    private func startPulseAnimation()
+    {
+        withAnimation(Animation.easeOut(duration: 1.5).repeatForever(autoreverses: false))
+        {
             pulseScale = 2.5
             pulseOpacity = 1.0
         }
     }
     
-    private func calculatePOIPosition(
-        poi: POIVisibilityService.VisiblePOI,
-        center: CGPoint,
-        radarRadius: CGFloat,
-        maxDistance: Double,
-        currentHeading: Double
-    ) -> CGPoint {
+    private func calculatePOIPosition(poi: POIVisibilityService.VisiblePOI, center: CGPoint,
+                                      radarRadius: CGFloat, maxDistance: Double,
+                                      currentHeading: Double ) -> CGPoint
+    {
         // Calculate relative bearing (accounting for device heading)
         let relativeBearing = poi.bearing - currentHeading
         let angleRadians = relativeBearing * .pi / 180
@@ -273,14 +305,18 @@ struct RadarView: View {
     }
 }
 
-struct RadarPOIMarker: View {
+struct RadarPOIMarker: View
+{
     let poi: POIVisibilityService.VisiblePOI
     @State private var showLabel = false
     
-    var body: some View {
-        VStack(spacing: 2) {
+    var body: some View
+    {
+        VStack(spacing: 2)
+        {
             // POI icon with better visibility
-            ZStack {
+            ZStack
+            {
                 // Outer glow/ring for visibility
                 Circle()
                     .fill(poiColor.opacity(0.3))
@@ -296,15 +332,19 @@ struct RadarPOIMarker: View {
                     .font(.system(size: 12))
                     .foregroundColor(poiColor)
             }
-            .onTapGesture {
-                withAnimation {
+            .onTapGesture
+            {
+                withAnimation
+                {
                     showLabel.toggle()
                 }
             }
             
             // Label (shown on tap)
-            if showLabel {
-                VStack(spacing: 2) {
+            if showLabel
+            {
+                VStack(spacing: 2)
+                {
                     Text(poi.poi.name)
                         .font(.caption2)
                         .fontWeight(.bold)
@@ -325,8 +365,10 @@ struct RadarPOIMarker: View {
         }
     }
     
-    private var poiColor: Color {
-        switch poi.poi.type.color {
+    private var poiColor: Color
+    {
+        switch poi.poi.type.color
+        {
         case "orange": return .orange
         case "brown": return .brown
         case "red": return .red
@@ -339,7 +381,8 @@ struct RadarPOIMarker: View {
     }
 }
 
-#Preview {
+#Preview
+{
     let testPOIs = [
         POIVisibilityService.VisiblePOI(
             poi: POI(name: "Test City", latitude: 37.7749, longitude: -122.4194, type: .city),

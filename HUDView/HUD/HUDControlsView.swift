@@ -8,7 +8,8 @@
 import SwiftUI
 import AVFoundation
 
-struct HUDControlsView: View {
+struct HUDControlsView: View
+{
     @Binding var selectedCamera: AVCaptureDevice.Position
     @Binding var showPOIList: Bool
     @Binding var showCompass: Bool
@@ -20,12 +21,17 @@ struct HUDControlsView: View {
     let maxPOIDistance: Double
     let maxListDistance: Double
     
-    var body: some View {
-        HStack(spacing: 20) {
+    var body: some View
+    {
+        HStack(spacing: 20)
+        {
             // Switch camera button
-            Button {
+            Button
+            {
                 selectedCamera = selectedCamera == .back ? .front : .back
-            } label: {
+            }
+        label:
+            {
                 Image(systemName: "camera.rotate")
                     .font(.body)
                     .foregroundStyle(.black)
@@ -37,11 +43,15 @@ struct HUDControlsView: View {
             Spacer()
             
             // Toggle POI list button
-            Button {
-                withAnimation {
+            Button
+            {
+                withAnimation
+                {
                     showPOIList.toggle()
                 }
-            } label: {
+            }
+            label:
+            {
                 Image(systemName: showPOIList ? "list.bullet.circle.fill" : "list.bullet.circle")
                     .font(.body)
                     .foregroundStyle(.black)
@@ -51,11 +61,15 @@ struct HUDControlsView: View {
             }
             
             // Toggle compass button
-            Button {
-                withAnimation {
+            Button
+            {
+                withAnimation
+                {
                     showCompass.toggle()
                 }
-            } label: {
+            }
+            label:
+            {
                 Image(systemName: showCompass ? "map.circle.fill" : "map.circle")
                     .font(.body)
                     .foregroundStyle(.black)
@@ -65,11 +79,15 @@ struct HUDControlsView: View {
             }
             
             // Toggle horizon line button
-            Button {
-                withAnimation {
+            Button
+            {
+                withAnimation
+                {
                     showHorizon.toggle()
                 }
-            } label: {
+            }
+            label:
+            {
                 Image(systemName: showHorizon ? "sun.horizon.fill" : "sun.horizon")
                     .font(.body)
                     .foregroundStyle(.black)
@@ -79,9 +97,12 @@ struct HUDControlsView: View {
             }
             
             // Show radar view button
-            Button {
+            Button
+            {
                 showRadarView = true
-            } label: {
+            }
+            label:
+            {
                 Image(systemName: "target")
                     .font(.body)
                     .foregroundStyle(.black)
@@ -91,10 +112,14 @@ struct HUDControlsView: View {
             }
             
             // Filter POI types button
-            Button {
+            Button
+            {
                 showFilterSheet = true
-            } label: {
-                ZStack(alignment: .topTrailing) {
+            }
+            label:
+            {
+                ZStack(alignment: .topTrailing)
+                {
                     Image(systemName: "line.3.horizontal.decrease.circle")
                         .font(.body)
                         .foregroundStyle(.black)
@@ -104,7 +129,8 @@ struct HUDControlsView: View {
                     
                     // Badge showing filter is active
                     if selectedPOITypes.count < POIType.allCases.count || 
-                       maxPOIDistance != 100_000 || maxListDistance != 50_000 {
+                       maxPOIDistance != 100_000 || maxListDistance != 50_000
+                    {
                         Circle()
                             .fill(.blue)
                             .frame(width: 8, height: 8)
@@ -118,7 +144,8 @@ struct HUDControlsView: View {
     }
 }
 
-#Preview {
+#Preview
+{
     @Previewable @State var selectedCamera: AVCaptureDevice.Position = .back
     @Previewable @State var showPOIList = false
     @Previewable @State var showCompass = true

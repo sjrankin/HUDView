@@ -8,46 +8,64 @@
 import SwiftUI
 
 /// View for filtering POI types and distance range
-struct POIFilterView: View {
+struct POIFilterView: View
+{
     @Binding var selectedTypes: Set<POIType>
     @Binding var maxDistance: Double
     @Binding var maxListDistance: Double
     @Binding var distanceUnit: HUDSettings.DistanceUnit
     @Environment(\.dismiss) var dismiss
     
-    var body: some View {
-        NavigationStack {
-            List {
+    var body: some View
+    {
+        NavigationStack
+        {
+            List
+            {
                 // Distance Unit Section
                 Section {
-                    Picker("Distance Unit", selection: $distanceUnit) {
-                        ForEach(HUDSettings.DistanceUnit.allCases, id: \.self) { unit in
+                    Picker("Distance Unit", selection: $distanceUnit)
+                    {
+                        ForEach(HUDSettings.DistanceUnit.allCases, id: \.self)
+                        {
+                            unit in
                             Text(unit.displayName).tag(unit)
                         }
                     }
                     .pickerStyle(.segmented)
-                } header: {
+                }
+                header:
+                {
                     Text("Distance Unit")
-                } footer: {
+                }
+                footer:
+                {
                     Text("Choose whether to display distances in kilometers or miles")
                 }
                 
                 // Distance Range Section
-                Section {
-                    VStack(alignment: .leading, spacing: 12) {
+                Section
+                {
+                    VStack(alignment: .leading, spacing: 12)
+                    {
                         Text("Overlay POIs Range")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                         
                         // Scrollable horizontal picker for distance presets
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 8) {
-                                ForEach(HUDSettings.DistanceUnit.distancePresets, id: \.self) { distance in
+                        ScrollView(.horizontal, showsIndicators: false)
+                        {
+                            HStack(spacing: 8)
+                            {
+                                ForEach(HUDSettings.DistanceUnit.distancePresets, id: \.self)
+                                {
+                                    distance in
                                     DistanceButton(
                                         distance: distance,
                                         currentDistance: maxDistance,
                                         distanceUnit: distanceUnit
-                                    ) {
+                                    )
+                                    {
                                         maxDistance = distance
                                     }
                                 }
@@ -61,20 +79,26 @@ struct POIFilterView: View {
                     }
                     .padding(.vertical, 4)
                     
-                    VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 12)
+                    {
                         Text("Nearby List Range")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                         
                         // Scrollable horizontal picker for list distance presets
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 8) {
-                                ForEach(HUDSettings.DistanceUnit.distancePresets, id: \.self) { distance in
+                        ScrollView(.horizontal, showsIndicators: false)
+                        {
+                            HStack(spacing: 8)
+                            {
+                                ForEach(HUDSettings.DistanceUnit.distancePresets, id: \.self)
+                                {
+                                    distance in
                                     DistanceButton(
                                         distance: distance,
                                         currentDistance: maxListDistance,
                                         distanceUnit: distanceUnit
-                                    ) {
+                                    )
+                                    {
                                         maxListDistance = distance
                                     }
                                 }
@@ -87,22 +111,30 @@ struct POIFilterView: View {
                             .foregroundStyle(.secondary)
                     }
                     .padding(.vertical, 4)
-                } header: {
+                }
+                header:
+                {
                     Text("Distance Range")
-                } footer: {
+                }
+                footer:
+                {
                     Text("Scroll horizontally to see all distance options")
                 }
                 
                 // POI Categories Section
-                Section("POI Categories") {
-                    ForEach(POIType.allCases, id: \.self) { type in
-                        POIFilterRow(
-                            type: type,
-                            isSelected: selectedTypes.contains(type)
-                        ) {
-                            if selectedTypes.contains(type) {
+                Section("POI Categories")
+                {
+                    ForEach(POIType.allCases, id: \.self)
+                    {
+                        type in
+                        POIFilterRow(type: type, isSelected: selectedTypes.contains(type))
+                        {
+                            if selectedTypes.contains(type)
+                            {
                                 selectedTypes.remove(type)
-                            } else {
+                            }
+                            else
+                            {
                                 selectedTypes.insert(type)
                             }
                         }
@@ -110,16 +142,20 @@ struct POIFilterView: View {
                 }
                 
                 // Quick Actions Section
-                Section {
-                    Button("Select All Categories") {
+                Section
+                {
+                    Button("Select All Categories")
+                    {
                         selectedTypes = Set(POIType.allCases)
                     }
                     
-                    Button("Deselect All Categories") {
+                    Button("Deselect All Categories")
+                    {
                         selectedTypes.removeAll()
                     }
                     
-                    Button("Reset to Defaults") {
+                    Button("Reset to Defaults")
+                    {
                         selectedTypes = [.city, .mountain, .bridge, .park]
                         maxDistance = 100_000
                         maxListDistance = 50_000
@@ -128,18 +164,24 @@ struct POIFilterView: View {
             }
             .navigationTitle("Filter POIs")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button {
+            .toolbar
+            {
+                ToolbarItem(placement: .confirmationAction)
+                {
+                    Button
+                    {
                         dismiss()
-                    } label: {
+                    }
+                    label:
+                    {
                         Text("Done")
                             .fontWeight(.semibold)
                     }
                 }
             }
         }
-        .onAppear {
+        .onAppear
+        {
             // Snap to nearest preset if current value isn't already a preset
             maxDistance = snapToNearestPreset(maxDistance)
             maxListDistance = snapToNearestPreset(maxListDistance)
@@ -147,11 +189,13 @@ struct POIFilterView: View {
     }
     
     /// Snap a distance value to the nearest preset
-    private func snapToNearestPreset(_ distance: Double) -> Double {
+    private func snapToNearestPreset(_ distance: Double) -> Double
+    {
         let presets = HUDSettings.DistanceUnit.distancePresets
         
         // If already a preset, return as-is
-        if presets.contains(distance) {
+        if presets.contains(distance)
+        {
             return distance
         }
         
@@ -160,23 +204,27 @@ struct POIFilterView: View {
     }
     
     /// Check if a distance matches a preset (with tolerance for floating point comparison)
-    private func isSelected(_ distance: Double, current: Double) -> Bool {
+    private func isSelected(_ distance: Double, current: Double) -> Bool
+    {
         abs(distance - current) < 1.0 // Within 1 meter tolerance
     }
 }
 
 /// A button for selecting distance presets with proper state tracking
-struct DistanceButton: View {
+struct DistanceButton: View
+{
     let distance: Double
     let currentDistance: Double
     let distanceUnit: HUDSettings.DistanceUnit
     let action: () -> Void
     
-    private var isSelected: Bool {
+    private var isSelected: Bool
+    {
         abs(distance - currentDistance) < 1.0
     }
     
-    var body: some View {
+    var body: some View
+    {
         Text(distanceUnit.formatPreset(meters: distance))
             .font(.callout)
             .fontWeight(isSelected ? .semibold : .regular)
@@ -185,25 +233,27 @@ struct DistanceButton: View {
             .background(isSelected ? Color.blue : Color.secondary.opacity(0.15))
             .foregroundStyle(isSelected ? .white : .primary)
             .clipShape(RoundedRectangle(cornerRadius: 8))
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(isSelected ? Color.blue : Color.clear, lineWidth: 2)
-            )
+            .overlay(RoundedRectangle(cornerRadius: 8)
+                    .stroke(isSelected ? Color.blue : Color.clear, lineWidth: 2))
             .contentShape(Rectangle())
-            .onTapGesture {
+            .onTapGesture
+        {
                 action()
             }
     }
 }
 
 /// Individual row for POI filter
-struct POIFilterRow: View {
+struct POIFilterRow: View
+{
     let type: POIType
     let isSelected: Bool
     let action: () -> Void
     
-    var body: some View {
-        Button(action: action) {
+    var body: some View
+    {
+        Button(action: action)
+        {
             HStack {
                 Image(systemName: type.icon)
                     .foregroundStyle(colorForType)
@@ -214,7 +264,8 @@ struct POIFilterRow: View {
                 
                 Spacer()
                 
-                if isSelected {
+                if isSelected
+                {
                     Image(systemName: "checkmark")
                         .foregroundStyle(.blue)
                 }
@@ -222,8 +273,10 @@ struct POIFilterRow: View {
         }
     }
     
-    private var colorForType: Color {
-        switch type.color {
+    private var colorForType: Color
+    {
+        switch type.color
+        {
         case "orange": return .orange
         case "brown": return .brown
         case "red": return .red
@@ -237,7 +290,8 @@ struct POIFilterRow: View {
     }
 }
 
-#Preview {
+#Preview
+{
     @Previewable @State var selectedTypes: Set<POIType> = [.city, .mountain, .bridge]
     @Previewable @State var maxDistance: Double = 100_000
     @Previewable @State var maxListDistance: Double = 50_000

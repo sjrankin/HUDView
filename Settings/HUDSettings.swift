@@ -9,11 +9,12 @@ import Foundation
 import AVFoundation
 
 /// Manages persistent storage of HUD settings using UserDefaults
-@Observable
-class HUDSettings {
+@Observable class HUDSettings
+{
     static let shared = HUDSettings()
     
-    private enum Keys {
+    private enum Keys
+    {
         static let selectedCamera = "hudSettings.selectedCamera"
         static let showPOIList = "hudSettings.showPOIList"
         static let showCompass = "hudSettings.showCompass"
@@ -25,62 +26,79 @@ class HUDSettings {
     }
     
     /// Distance unit for display
-    enum DistanceUnit: String, CaseIterable {
+    enum DistanceUnit: String, CaseIterable
+    {
         case metric = "metric"
         case imperial = "imperial"
         
-        var displayName: String {
-            switch self {
-            case .metric: return "Kilometers"
-            case .imperial: return "Miles"
+        var displayName: String
+        {
+            switch self
+            {
+                case .metric: return "Kilometers"
+                case .imperial: return "Miles"
             }
         }
         
-        var abbreviation: String {
-            switch self {
-            case .metric: return "km"
-            case .imperial: return "mi"
+        var abbreviation: String
+        {
+            switch self
+            {
+                case .metric: return "km"
+                case .imperial: return "mi"
             }
         }
         
-        var smallUnit: String {
-            switch self {
-            case .metric: return "m"
-            case .imperial: return "ft"
+        var smallUnit: String
+        {
+            switch self
+            {
+                case .metric: return "m"
+                case .imperial: return "ft"
             }
         }
         
         /// Convert meters to the display unit
-        func convert(meters: Double) -> Double {
-            switch self {
-            case .metric:
-                return meters / 1000.0 // Convert to kilometers
-            case .imperial:
-                return meters / 1609.34 // Convert to miles
+        func convert(meters: Double) -> Double
+        {
+            switch self
+            {
+                case .metric:
+                    return meters / 1000.0 // Convert to kilometers
+                case .imperial:
+                    return meters / 1609.34 // Convert to miles
             }
         }
         
         /// Convert meters to small unit (meters or feet)
-        func convertSmall(meters: Double) -> Double {
-            switch self {
-            case .metric:
-                return meters
-            case .imperial:
-                return meters * 3.28084 // Convert to feet
+        func convertSmall(meters: Double) -> Double
+        {
+            switch self
+            {
+                case .metric:
+                    return meters
+                case .imperial:
+                    return meters * 3.28084 // Convert to feet
             }
         }
         
         /// Format distance with appropriate unit
-        func format(meters: Double) -> String {
-            if meters < 1000 {
+        func format(meters: Double) -> String
+        {
+            if meters < 1000
+            {
                 // Use small unit for distances under 1km/0.62mi
                 let value = convertSmall(meters: meters)
                 return String(format: "%.0f %@", value, smallUnit)
-            } else if meters < 10000 {
+            }
+            else if meters < 10000
+            {
                 // One decimal place for mid-range distances
                 let value = convert(meters: meters)
                 return String(format: "%.1f %@", value, abbreviation)
-            } else {
+            }
+            else
+            {
                 // No decimal places for long distances
                 let value = convert(meters: meters)
                 return String(format: "%.0f %@", value, abbreviation)
@@ -88,7 +106,8 @@ class HUDSettings {
         }
         
         /// Standard distance presets in meters
-        static let distancePresets: [Double] = [
+        static let distancePresets: [Double] =
+        [
             1_000,      // 1 km / 0.62 mi
             5_000,      // 5 km / 3.1 mi
             10_000,     // 10 km / 6.2 mi
@@ -102,15 +121,20 @@ class HUDSettings {
         ]
         
         /// Format preset distance for display in picker
-        func formatPreset(meters: Double) -> String {
+        func formatPreset(meters: Double) -> String
+        {
             let value = convert(meters: meters)
-            if value < 1 {
+            if value < 1
+            {
                 // For values less than 1 unit, show in smaller unit
                 return String(format: "%.0f %@", convertSmall(meters: meters), smallUnit)
-            } else if value >= 1000 {
+            } else if value >= 1000
+            {
                 // For very large values, show with commas
                 return String(format: "%.0f %@", value, abbreviation)
-            } else {
+            }
+            else
+            {
                 // Show whole numbers for most cases
                 return String(format: "%.0f %@", value, abbreviation)
             }
@@ -121,19 +145,24 @@ class HUDSettings {
     
     // MARK: - Settings Properties
     
-    var selectedCamera: AVCaptureDevice.Position {
-        get {
+    var selectedCamera: AVCaptureDevice.Position
+    {
+        get
+        {
             let rawValue = defaults.integer(forKey: Keys.selectedCamera)
             // If never set, defaults to 0 which is .unspecified, so we use .back
             return rawValue == 0 ? .back : AVCaptureDevice.Position(rawValue: rawValue) ?? .back
         }
-        set {
+        set
+        {
             defaults.set(newValue.rawValue, forKey: Keys.selectedCamera)
         }
     }
     
-    var showPOIList: Bool {
-        get {
+    var showPOIList: Bool
+    {
+        get
+        {
             // Default to false if never set
             defaults.object(forKey: Keys.showPOIList) as? Bool ?? false
         }
@@ -142,87 +171,109 @@ class HUDSettings {
         }
     }
     
-    var showCompass: Bool {
-        get {
+    var showCompass: Bool
+    {
+        get
+        {
             // Default to true if never set
             defaults.object(forKey: Keys.showCompass) as? Bool ?? true
         }
-        set {
+        set
+        {
             defaults.set(newValue, forKey: Keys.showCompass)
         }
     }
     
-    var showHorizon: Bool {
-        get {
+    var showHorizon: Bool
+    {
+        get
+        {
             // Default to true if never set
             defaults.object(forKey: Keys.showHorizon) as? Bool ?? true
         }
-        set {
+        set
+        {
             defaults.set(newValue, forKey: Keys.showHorizon)
         }
     }
     
-    var selectedPOITypes: Set<POIType> {
-        get {
-            if let rawValues = defaults.array(forKey: Keys.selectedPOITypes) as? [String] {
+    var selectedPOITypes: Set<POIType>
+    {
+        get
+        {
+            if let rawValues = defaults.array(forKey: Keys.selectedPOITypes) as? [String]
+            {
                 let types = rawValues.compactMap { POIType(rawValue: $0) }
                 return Set(types)
             }
             // Default to all types if never set
             return Set(POIType.allCases)
         }
-        set {
+        set
+        {
             let rawValues = newValue.map { $0.rawValue }
             defaults.set(rawValues, forKey: Keys.selectedPOITypes)
         }
     }
     
-    var maxPOIDistance: Double {
-        get {
+    var maxPOIDistance: Double
+    {
+        get
+        {
             let value = defaults.double(forKey: Keys.maxPOIDistance)
             // Default to 100km if never set
             return value == 0 ? 100_000 : value
         }
-        set {
+        set
+        {
             defaults.set(newValue, forKey: Keys.maxPOIDistance)
         }
     }
     
-    var maxListDistance: Double {
-        get {
+    var maxListDistance: Double
+    {
+        get
+        {
             let value = defaults.double(forKey: Keys.maxListDistance)
             // Default to 50km if never set
             return value == 0 ? 50_000 : value
         }
-        set {
+        set
+        {
             defaults.set(newValue, forKey: Keys.maxListDistance)
         }
     }
     
-    var distanceUnit: DistanceUnit {
-        get {
+    var distanceUnit: DistanceUnit
+    {
+        get
+        {
             if let rawValue = defaults.string(forKey: Keys.distanceUnit),
-               let unit = DistanceUnit(rawValue: rawValue) {
+               let unit = DistanceUnit(rawValue: rawValue)
+            {
                 return unit
             }
             // Default to metric
             return .metric
         }
-        set {
+        set
+        {
             defaults.set(newValue.rawValue, forKey: Keys.distanceUnit)
         }
     }
     
     // MARK: - Initialization
     
-    private init() {
+    private init()
+    {
         // Private init to enforce singleton pattern
     }
     
     // MARK: - Convenience Methods
     
     /// Reset all settings to their default values
-    func resetToDefaults() {
+    func resetToDefaults()
+    {
         selectedCamera = .back
         showPOIList = false
         showCompass = true

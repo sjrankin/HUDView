@@ -8,27 +8,28 @@
 import SwiftUI
 
 /// Displays POIs overlaid on the camera view as directional points
-struct POIOverlayView: View {
+struct POIOverlayView: View
+{
     let visiblePOIs: [POIVisibilityService.VisiblePOI]
     let userElevation: Double? // User's current elevation in meters
     
-    var body: some View {
-        GeometryReader { geometry in
-            ZStack {
+    var body: some View
+    {
+        GeometryReader
+        {
+            geometry in
+            ZStack
+            {
                 ForEach(visiblePOIs, id: \.poi.id) { visiblePOI in
                     POIMarker(visiblePOI: visiblePOI)
-                        .position(
-                            x: calculateHorizontalPosition(
-                                bearingDiff: visiblePOI.bearingDifference,
-                                width: geometry.size.width
-                            ),
-                            y: calculateVerticalPosition(
-                                poi: visiblePOI.poi,
-                                distance: visiblePOI.distance,
-                                userElevation: userElevation,
-                                height: geometry.size.height
-                            )
-                        )
+                        .position(x: calculateHorizontalPosition(
+                            bearingDiff: visiblePOI.bearingDifference,
+                            width: geometry.size.width),
+                                  y: calculateVerticalPosition(
+                                    poi: visiblePOI.poi,
+                                    distance: visiblePOI.distance,
+                                    userElevation: userElevation,
+                                    height: geometry.size.height))
                 }
             }
         }
@@ -39,7 +40,8 @@ struct POIOverlayView: View {
     ///   - bearingDiff: Difference in degrees between camera heading and POI bearing (-30 to +30)
     ///   - width: Screen width
     /// - Returns: X position on screen
-    private func calculateHorizontalPosition(bearingDiff: Double, width: CGFloat) -> CGFloat {
+    private func calculateHorizontalPosition(bearingDiff: Double, width: CGFloat) -> CGFloat
+    {
         // Assuming a 60° field of view (±30° from center)
         // Map -30° to 0, 0° to width/2, +30° to width
         let fieldOfView: Double = 60.0
@@ -61,7 +63,8 @@ struct POIOverlayView: View {
     ///   - userElevation: User's current elevation in meters
     ///   - height: Screen height
     /// - Returns: Y position on screen
-    private func calculateVerticalPosition(poi: POI, distance: Double, userElevation: Double?, height: CGFloat) -> CGFloat {
+    private func calculateVerticalPosition(poi: POI, distance: Double, userElevation: Double?, height: CGFloat) -> CGFloat
+    {
         let screenCenter = height * 0.5
         
         // Calculate elevation angle to POI
@@ -91,7 +94,8 @@ struct POIOverlayView: View {
     ///   - userElevation: User's elevation above sea level in meters
     ///   - distance: Horizontal distance to POI in meters
     /// - Returns: Elevation angle in degrees (positive = up, negative = down)
-    private func calculateElevationAngle(poiElevation: Double?, userElevation: Double?, distance: Double) -> Double {
+    private func calculateElevationAngle(poiElevation: Double?, userElevation: Double?, distance: Double) -> Double
+    {
         let earthRadius: Double = 6_371_000 // Earth's radius in meters
         
         // Default elevations if not provided
@@ -117,11 +121,14 @@ struct POIOverlayView: View {
 }
 
 /// Individual POI marker displayed as a point with label
-struct POIMarker: View {
+struct POIMarker: View
+{
     let visiblePOI: POIVisibilityService.VisiblePOI
     
-    var body: some View {
-        VStack(spacing: 0) {
+    var body: some View
+    {
+        VStack(spacing: 0)
+        {
             // Directional line pointing down to the point
             Rectangle()
                 .fill(colorForType.gradient)
@@ -132,14 +139,13 @@ struct POIMarker: View {
             Circle()
                 .fill(colorForType)
                 .frame(width: 12, height: 12)
-                .overlay(
-                    Circle()
-                        .stroke(.white, lineWidth: 2)
-                )
+                .overlay(Circle()
+                        .stroke(.white, lineWidth: 2))
                 .shadow(color: .black.opacity(0.5), radius: 3)
             
             // Label with icon and info
-            VStack(spacing: 4) {
+            VStack(spacing: 4)
+            {
                 // Icon
                 Image(systemName: visiblePOI.poi.type.icon)
                     .font(.caption)
@@ -160,77 +166,95 @@ struct POIMarker: View {
             }
             .padding(.horizontal, 8)
             .padding(.vertical, 6)
-            .background(
-                RoundedRectangle(cornerRadius: 8)
+            .background(RoundedRectangle(cornerRadius: 8)
                     .fill(.ultraThinMaterial)
-                    .shadow(color: .black.opacity(0.3), radius: 5, x: 0, y: 2)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(colorForType.opacity(0.5), lineWidth: 1)
-            )
+                    .shadow(color: .black.opacity(0.3), radius: 5, x: 0, y: 2))
+            .overlay(RoundedRectangle(cornerRadius: 8)
+                    .stroke(colorForType.opacity(0.5), lineWidth: 1))
             .padding(.top, 4)
         }
         .opacity(opacityForDistance)
     }
     
-    private var colorForType: Color {
-        switch visiblePOI.poi.type.color {
-        case "orange": return .orange
-        case "brown": return .brown
-        case "red": return .red
-        case "green": return .green
-        case "blue": return .blue
-        case "mint": return .mint
-        case "cyan": return .cyan
-        default: return .white
+    private var colorForType: Color
+    {
+        switch visiblePOI.poi.type.color
+        {
+            case "orange": return .orange
+            case "brown": return .brown
+            case "red": return .red
+            case "green": return .green
+            case "blue": return .blue
+            case "mint": return .mint
+            case "cyan": return .cyan
+            default: return .white
         }
     }
     
-    private var opacityForDistance: Double {
+    private var opacityForDistance: Double
+    {
         let distance = visiblePOI.distance
-        if distance < 5000 {
+        if distance < 5000
+        {
             return 1.0
-        } else if distance < 20000 {
+        }
+        else if distance < 20000
+        {
             return 0.9
-        } else if distance < 50000 {
+        }
+        else if distance < 50000
+        {
             return 0.8
-        } else {
+        }
+        else
+        {
             return 0.7
         }
     }
     
-    private func formatPopulation(_ population: Int) -> String {
-        if population >= 1_000_000 {
+    private func formatPopulation(_ population: Int) -> String
+    {
+        if population >= 1_000_000
+        {
             return String(format: "%.1fM", Double(population) / 1_000_000)
-        } else if population >= 1_000 {
+        }
+        else if population >= 1_000
+        {
             return String(format: "%.0fK", Double(population) / 1_000)
         }
         return "\(population)"
     }
     
-    private func formatElevation(_ elevation: Double) -> String {
-        if elevation >= 1000 {
+    private func formatElevation(_ elevation: Double) -> String
+    {
+        if elevation >= 1000
+        {
             return String(format: "%.1f km", elevation / 1000)
-        } else {
+        }
+        else
+        {
             return String(format: "%.0f m", elevation)
         }
     }
 }
 
 /// List view of nearby POIs
-struct POIListView: View {
+struct POIListView: View
+{
     let pois: [POIVisibilityService.VisiblePOI]
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 8)
+        {
             Text("Nearby Landmarks")
                 .font(.headline)
                 .foregroundStyle(.white)
                 .padding(.horizontal)
             
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
+            ScrollView(.horizontal, showsIndicators: false)
+            {
+                HStack(spacing: 12)
+                {
                     ForEach(pois, id: \.poi.id) { visiblePOI in
                         POICard(visiblePOI: visiblePOI)
                     }
@@ -246,11 +270,14 @@ struct POIListView: View {
 }
 
 /// Compact card for POI
-struct POICard: View {
+struct POICard: View
+{
     let visiblePOI: POIVisibilityService.VisiblePOI
     
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+    var body: some View
+    {
+        VStack(alignment: .leading, spacing: 8)
+        {
             HStack {
                 Image(systemName: visiblePOI.poi.type.icon)
                     .foregroundStyle(colorForType)
@@ -262,7 +289,8 @@ struct POICard: View {
                     .lineLimit(1)
             }
             
-            HStack(spacing: 4) {
+            HStack(spacing: 4)
+            {
                 Image(systemName: "location.fill")
                     .font(.caption2)
                 Text(visiblePOI.distanceFormatted)
@@ -270,8 +298,10 @@ struct POICard: View {
             }
             .foregroundStyle(.white.opacity(0.8))
             
-            if let population = visiblePOI.poi.population {
-                HStack(spacing: 4) {
+            if let population = visiblePOI.poi.population
+            {
+                HStack(spacing: 4)
+                {
                     Image(systemName: "person.2.fill")
                         .font(.caption2)
                     Text(formatPopulation(population))
@@ -280,7 +310,8 @@ struct POICard: View {
                 .foregroundStyle(.white.opacity(0.7))
             }
             
-            if let description = visiblePOI.poi.description {
+            if let description = visiblePOI.poi.description
+            {
                 Text(description)
                     .font(.caption2)
                     .foregroundStyle(.white.opacity(0.6))
@@ -291,41 +322,49 @@ struct POICard: View {
         .frame(width: 160)
         .background(.ultraThinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 12))
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(.white.opacity(0.2), lineWidth: 1)
-        )
+        .overlay(RoundedRectangle(cornerRadius: 12)
+                .stroke(.white.opacity(0.2), lineWidth: 1))
     }
     
-    private var colorForType: Color {
-        switch visiblePOI.poi.type.color {
-        case "orange": return .orange
-        case "brown": return .brown
-        case "red": return .red
-        case "green": return .green
-        case "blue": return .blue
-        case "mint": return .mint
-        case "cyan": return .cyan
-        default: return .white
+    private var colorForType: Color
+    {
+        switch visiblePOI.poi.type.color
+        {
+            case "orange": return .orange
+            case "brown": return .brown
+            case "red": return .red
+            case "green": return .green
+            case "blue": return .blue
+            case "mint": return .mint
+            case "cyan": return .cyan
+            default: return .white
         }
     }
     
-    private func formatPopulation(_ population: Int) -> String {
-        if population >= 1_000_000 {
+    private func formatPopulation(_ population: Int) -> String
+    {
+        if population >= 1_000_000
+        {
             return String(format: "%.1fM people", Double(population) / 1_000_000)
-        } else if population >= 1_000 {
+        }
+        else if population >= 1_000
+        {
             return String(format: "%.0fK people", Double(population) / 1_000)
         }
         return "\(population) people"
     }
 }
 /// Compass bearing indicator showing cardinal directions
-struct CompassBearingView: View {
+struct CompassBearingView: View
+{
     let currentHeading: Double
     
-    var body: some View {
-        GeometryReader { geometry in
-            ZStack {
+    var body: some View
+    {
+        GeometryReader {
+            geometry in
+            ZStack
+            {
                 // Background bar
                 Rectangle()
                     .fill(.ultraThinMaterial)
@@ -333,7 +372,9 @@ struct CompassBearingView: View {
                 
                 // Direction markers
                 HStack(spacing: 0) {
-                    ForEach(compassMarkers, id: \.bearing) { marker in
+                    ForEach(compassMarkers, id: \.bearing)
+                    {
+                        marker in
                         CompassMarker(
                             marker: marker,
                             currentHeading: currentHeading,
@@ -343,9 +384,11 @@ struct CompassBearingView: View {
                 }
                 
                 // Center indicator (crosshair) with heading display
-                VStack(spacing: 2) {
+                VStack(spacing: 2)
+                {
                     // Numeric heading display with direction
-                    VStack(spacing: 0) {
+                    VStack(spacing: 0)
+                    {
                         Text(formattedHeading)
                             .font(.system(size: 14, weight: .bold, design: .rounded))
                             .foregroundStyle(.white)
@@ -356,11 +399,9 @@ struct CompassBearingView: View {
                     }
                     .padding(.horizontal, 10)
                     .padding(.vertical, 4)
-                    .background(
-                        Capsule()
+                    .background(Capsule()
                             .fill(.red.opacity(0.9))
-                            .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
-                    )
+                            .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1))
                     
                     // Red crosshair
                     Rectangle()
@@ -378,15 +419,18 @@ struct CompassBearingView: View {
         .frame(height: 50)
     }
     
-    private var formattedHeading: String {
+    private var formattedHeading: String
+    {
         let heading = Int(currentHeading.rounded())
         return "\(heading)°"
     }
     
-    private var cardinalDirection: String {
+    private var cardinalDirection: String
+    {
         let heading = currentHeading
         
-        switch heading {
+        switch heading
+        {
         case 0..<22.5, 337.5...360:
             return "N"
         case 22.5..<67.5:
@@ -408,7 +452,8 @@ struct CompassBearingView: View {
         }
     }
     
-    private var compassMarkers: [CompassMarkerData] {
+    private var compassMarkers: [CompassMarkerData]
+    {
         [
             CompassMarkerData(bearing: 0, label: "N", isCardinal: true),
             CompassMarkerData(bearing: 45, label: "NE", isCardinal: false),
@@ -422,22 +467,28 @@ struct CompassBearingView: View {
     }
 }
 
-struct CompassMarkerData {
+struct CompassMarkerData
+{
     let bearing: Double
     let label: String
     let isCardinal: Bool
 }
 
-struct CompassMarker: View {
+struct CompassMarker: View
+{
     let marker: CompassMarkerData
     let currentHeading: Double
     let screenWidth: CGFloat
     
-    var body: some View {
+    var body: some View
+    {
         let offset = calculateOffset()
         
-        if abs(offset) < screenWidth / 2 + 100 { // Only show if near screen
-            VStack(spacing: 4) {
+        if abs(offset) < screenWidth / 2 + 100
+        {
+            // Only show if near screen
+            VStack(spacing: 4)
+            {
                 Rectangle()
                     .fill(.white)
                     .frame(width: 2, height: marker.isCardinal ? 15 : 10)
@@ -452,13 +503,20 @@ struct CompassMarker: View {
         }
     }
     
-    private func calculateOffset() -> CGFloat {
+    private func calculateOffset() -> CGFloat
+    {
         // Calculate angular difference between marker and current heading
         var diff = marker.bearing - currentHeading
         
         // Normalize to [-180, 180]
-        while diff > 180 { diff -= 360 }
-        while diff < -180 { diff += 360 }
+        while diff > 180
+        {
+            diff -= 360
+        }
+        while diff < -180
+        {
+            diff += 360
+        }
         
         // Map to screen position
         // 60° FOV = screen width
@@ -466,25 +524,34 @@ struct CompassMarker: View {
         return CGFloat(diff / degreesPerPixel)
     }
     
-    private func opacityForDistance(_ offset: CGFloat) -> Double {
+    private func opacityForDistance(_ offset: CGFloat) -> Double
+    {
         let distance = abs(offset)
         let halfScreen = screenWidth / 2
         
-        if distance < halfScreen * 0.7 {
+        if distance < halfScreen * 0.7
+        {
             return 1.0
-        } else if distance < halfScreen {
+        }
+        else if distance < halfScreen
+        {
             return 0.7
-        } else {
+        }
+        else
+        {
             return 0.3
         }
     }
 }
 
-#Preview("Compass Bearing View") {
-    ZStack {
+#Preview("Compass Bearing View")
+{
+    ZStack
+    {
         Color.black.ignoresSafeArea()
         
-        VStack {
+        VStack
+        {
             CompassBearingView(currentHeading: 135)
             
             Spacer()

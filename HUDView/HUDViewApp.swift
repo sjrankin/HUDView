@@ -7,10 +7,12 @@
 
 import SwiftUI
 
-@main
-struct HUDViewApp: App {
-    var body: some Scene {
-        WindowGroup {
+@main struct HUDViewApp: App
+{
+    var body: some Scene
+    {
+        WindowGroup
+        {
             ContentView()
         }
     }

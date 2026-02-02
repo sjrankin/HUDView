@@ -9,22 +9,24 @@ import CoreMotion
 import SwiftUI
 
 /// Manages device motion and attitude tracking
-@MainActor
-@Observable
-class MotionManager {
+@MainActor @Observable class MotionManager
+{
     private let motionManager = CMMotionManager()
     
     var pitch: Double = 0 // Rotation around X-axis (looking up/down)
     var roll: Double = 0  // Rotation around Y-axis (tilting left/right)
     var yaw: Double = 0   // Rotation around Z-axis (compass heading)
     
-    var isAvailable: Bool {
+    var isAvailable: Bool
+    {
         motionManager.isDeviceMotionAvailable
     }
     
     /// Start tracking device motion
-    func startUpdating() {
-        guard isAvailable else {
+    func startUpdating()
+    {
+        guard isAvailable else
+        {
             print("⚠️ Device motion not available")
             return
         }
@@ -34,15 +36,21 @@ class MotionManager {
         // Use reference frame that accounts for Earth's gravity and magnetic field
         motionManager.deviceMotionUpdateInterval = 1.0 / 60.0 // 60 Hz
         
-        motionManager.startDeviceMotionUpdates(using: .xTrueNorthZVertical, to: .main) { [weak self] motion, error in
-            guard let self = self, let motion = motion else {
-                if let error = error {
+        motionManager.startDeviceMotionUpdates(using: .xTrueNorthZVertical, to: .main)
+        {
+            [weak self] motion, error in
+            guard let self = self, let motion = motion else
+            {
+                if let error = error
+                {
                     print("❌ Motion update error: \(error.localizedDescription)")
                 }
                 return
             }
             
-            Task { @MainActor in
+            Task
+            {
+                @MainActor in
                 // Get raw pitch in radians, convert to degrees
                 let rawPitch = motion.attitude.pitch * 180.0 / .pi
                 let rawRoll = motion.attitude.roll * 180.0 / .pi
@@ -61,17 +69,20 @@ class MotionManager {
     }
     
     /// Stop tracking device motion
-    func stopUpdating() {
+    func stopUpdating()
+    {
         motionManager.stopDeviceMotionUpdates()
     }
     
     /// Get pitch in degrees (positive = looking up, negative = looking down)
-    var pitchDegrees: Double {
+    var pitchDegrees: Double
+    {
         pitch
     }
     
     /// Get roll in degrees (positive = tilting right, negative = tilting left)
-    var rollDegrees: Double {
+    var rollDegrees: Double
+    {
         roll
     }
 }

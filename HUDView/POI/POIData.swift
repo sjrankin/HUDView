@@ -9,7 +9,8 @@ import Foundation
 import CoreLocation
 
 /// Represents a point of interest (landmark or city)
-struct POI: Identifiable {
+struct POI: Identifiable
+{
     let id = UUID()
     let name: String
     let coordinate: CLLocationCoordinate2D
@@ -19,7 +20,8 @@ struct POI: Identifiable {
     let population: Int? // for cities
     
     init(name: String, latitude: Double, longitude: Double, type: POIType,
-         description: String? = nil, elevation: Double? = nil, population: Int? = nil) {
+         description: String? = nil, elevation: Double? = nil, population: Int? = nil)
+    {
         self.name = name
         self.coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
         self.type = type
@@ -30,7 +32,8 @@ struct POI: Identifiable {
 }
 
 /// Type of point of interest
-enum POIType: String, CaseIterable {
+enum POIType: String, CaseIterable
+{
     case city
     case mountain
     case bridge
@@ -42,57 +45,65 @@ enum POIType: String, CaseIterable {
     case test
     case route
     
-    var icon: String {
-        switch self {
-        case .city: return "building.2.fill"
-        case .mountain: return "triangle.fill"
-        case .bridge: return "water.waves.and.arrow.trianglehead.up"
-        case .park: return "tree.fill"
-        case .lake: return "drop.fill"
-        case .forest: return "tree.fill"
-        case .volcano: return "triangle.fill"
-        case .river: return "water.waves"
-        case .test: return "testtube.2"
-        case .route: return "mappin.and.ellipse"
+    var icon: String
+    {
+        switch self
+        {
+            case .city: return "building.2.fill"
+            case .mountain: return "triangle.fill"
+            case .bridge: return "water.waves.and.arrow.trianglehead.up"
+            case .park: return "tree.fill"
+            case .lake: return "drop.fill"
+            case .forest: return "tree.fill"
+            case .volcano: return "triangle.fill"
+            case .river: return "water.waves"
+            case .test: return "testtube.2"
+            case .route: return "mappin.and.ellipse"
         }
     }
     
-    var color: String {
-        switch self {
-        case .city: return "orange"
-        case .mountain: return "brown"
-        case .bridge: return "red"
-        case .park: return "green"
-        case .lake, .river: return "blue"
-        case .forest: return "green"
-        case .volcano: return "red"
-        case .test: return "purple"
+    var color: String
+    {
+        switch self
+        {
+            case .city: return "orange"
+            case .mountain: return "brown"
+            case .bridge: return "red"
+            case .park: return "green"
+            case .lake, .river: return "blue"
+            case .forest: return "green"
+            case .volcano: return "red"
+            case .test: return "purple"
             case .route: return "black"
         }
     }
     
-    var displayName: String {
-        switch self {
-        case .city: return "Cities"
-        case .mountain: return "Mountains"
-        case .bridge: return "Bridges"
-        case .park: return "Parks"
-        case .lake: return "Lakes"
-        case .forest: return "Forests"
-        case .volcano: return "Volcanoes"
-        case .river: return "Rivers"
-        case .test: return "Test"
+    var displayName: String
+    {
+        switch self
+        {
+            case .city: return "Cities"
+            case .mountain: return "Mountains"
+            case .bridge: return "Bridges"
+            case .park: return "Parks"
+            case .lake: return "Lakes"
+            case .forest: return "Forests"
+            case .volcano: return "Volcanoes"
+            case .river: return "Rivers"
+            case .test: return "Test"
             case .route: return "Route Waypoint"
         }
     }
 }
 
 /// Database of Northern California landmarks and cities
-struct NorthernCaliforniaData {
+struct NorthernCaliforniaData
+{
     
     // MARK: - Major Cities
     
-    static let cities: [POI] = [
+    static let cities: [POI] =
+    [
         // Bay Area
         POI(name: "San Francisco", latitude: 37.7749, longitude: -122.4194, type: .city, population: 873_965),
         POI(name: "San Jose", latitude: 37.3382, longitude: -121.8863, type: .city, population: 1_013_240),
@@ -136,7 +147,8 @@ struct NorthernCaliforniaData {
     
     // MARK: - Major Landmarks
     
-    static let landmarks: [POI] = [
+    static let landmarks: [POI] =
+    [
         // Mountains & Peaks
         POI(name: "Mount Shasta", latitude: 41.4092, longitude: -122.1949, type: .volcano, elevation: 4322),
         POI(name: "Mount Diablo", latitude: 37.8816, longitude: -121.9144, type: .mountain, elevation: 1173),
@@ -163,14 +175,16 @@ struct NorthernCaliforniaData {
     
     // MARK: - Test POIs
     
-    static let testPOIs: [POI] = [
+    static let testPOIs: [POI] =
+    [
         POI(name: "Home", latitude: 38.00665, longitude: -121.35991, type: .test, description: "Home"),
         POI(name: "Work", latitude: 37.521037, longitude: -122.256810, type: .test, description: "RWC Office"),
         POI(name: "Old House", latitude: 38.631662, longitude: -120.930632, type: .test, description: "Shingle Springs"),
     ]
     
     // MARK: - Route Waypoints
-    static let routePOIs: [POI] = [
+    static let routePOIs: [POI] =
+    [
         POI(name: "Waypoint 1", latitude: 38.005653, longitude: -121.360298, type: .route),
         POI(name: "Waypoint 2", latitude: 38.000609, longitude: -121.349935, type: .route),
         POI(name: "Waypoint 3", latitude: 37.932380, longitude: -121.296659, type: .route),
@@ -201,7 +215,8 @@ struct NorthernCaliforniaData {
     
     // MARK: - Combined Data
     
-    static var allPOIs: [POI] {
+    static var allPOIs: [POI]
+    {
         cities + landmarks + testPOIs + routePOIs
     }
 }
@@ -209,50 +224,59 @@ struct NorthernCaliforniaData {
 // MARK: - POI Visibility Service
 
 /// Calculates which POIs are visible based on camera direction and location
-struct POIVisibilityService {
+struct POIVisibilityService
+{
     
     /// Represents a POI with additional visibility information
-    struct VisiblePOI {
+    struct VisiblePOI
+    {
         let poi: POI
         let distance: Double // meters
         let bearing: Double // degrees (0-360, where 0 is north)
         let bearingDifference: Double // degrees from camera heading
         
-        var distanceFormatted: String {
+        var distanceFormatted: String
+        {
             HUDSettings.shared.distanceUnit.format(meters: distance)
         }
     }
     
     /// Find POIs visible in the camera's field of view
-    static func visiblePOIs(
-        from userLocation: CLLocationCoordinate2D,
-        heading: Double,
-        fieldOfView: Double = 60,
-        maxDistance: Double = 100_000,
-        limit: Int = 10,
-        typeFilter: Set<POIType>? = nil
-    ) -> [VisiblePOI] {
+    static func visiblePOIs(from userLocation: CLLocationCoordinate2D, heading: Double,
+                            fieldOfView: Double = 60, maxDistance: Double = 100_000, limit: Int = 10,
+                            typeFilter: Set<POIType>? = nil) -> [VisiblePOI] {
         
         let userCLLocation = CLLocation(latitude: userLocation.latitude, longitude: userLocation.longitude)
         
         // Filter by type if specified
-        let filteredPOIs = if let typeFilter = typeFilter, !typeFilter.isEmpty {
+        let filteredPOIs = if let typeFilter = typeFilter, !typeFilter.isEmpty
+        {
             NorthernCaliforniaData.allPOIs.filter { typeFilter.contains($0.type) }
-        } else {
+        }
+        else
+        {
             NorthernCaliforniaData.allPOIs
         }
         
-        let poisWithBearing: [VisiblePOI] = filteredPOIs.compactMap { poi in
+        let poisWithBearing: [VisiblePOI] = filteredPOIs.compactMap
+        {
+            poi in
             let poiLocation = CLLocation(latitude: poi.coordinate.latitude, longitude: poi.coordinate.longitude)
             let distance = userCLLocation.distance(from: poiLocation)
             
-            guard distance <= maxDistance else { return nil }
+            guard distance <= maxDistance else
+            {
+                return nil
+            }
             
             let bearing = calculateBearing(from: userLocation, to: poi.coordinate)
             let bearingDiff = normalizeAngleDifference(heading, bearing)
             
             let halfFOV = fieldOfView / 2
-            guard abs(bearingDiff) <= halfFOV else { return nil }
+            guard abs(bearingDiff) <= halfFOV else
+            {
+                return nil
+            }
             
             return VisiblePOI(
                 poi: poi,
@@ -269,27 +293,32 @@ struct POIVisibilityService {
     }
     
     /// Get nearest POIs regardless of camera direction
-    static func nearestPOIs(
-        from userLocation: CLLocationCoordinate2D,
-        maxDistance: Double = 50_000,
-        limit: Int = 5,
-        typeFilter: Set<POIType>? = nil
-    ) -> [VisiblePOI] {
-        
+    static func nearestPOIs(from userLocation: CLLocationCoordinate2D, maxDistance: Double = 50_000,
+                            limit: Int = 5, typeFilter: Set<POIType>? = nil) -> [VisiblePOI]
+    {
         let userCLLocation = CLLocation(latitude: userLocation.latitude, longitude: userLocation.longitude)
         
         // Filter by type if specified
-        let filteredPOIs = if let typeFilter = typeFilter, !typeFilter.isEmpty {
+        let filteredPOIs = if let typeFilter = typeFilter, !typeFilter.isEmpty
+        {
             NorthernCaliforniaData.allPOIs.filter { typeFilter.contains($0.type) }
-        } else {
+        }
+        else
+        {
             NorthernCaliforniaData.allPOIs
         }
         
-        let poisWithDistance: [VisiblePOI] = filteredPOIs.compactMap { poi in
-            let poiLocation = CLLocation(latitude: poi.coordinate.latitude, longitude: poi.coordinate.longitude)
+        let poisWithDistance: [VisiblePOI] = filteredPOIs.compactMap
+        {
+            poi in
+            let poiLocation = CLLocation(latitude: poi.coordinate.latitude,
+                                         longitude: poi.coordinate.longitude)
             let distance = userCLLocation.distance(from: poiLocation)
             
-            guard distance <= maxDistance else { return nil }
+            guard distance <= maxDistance else
+            {
+                return nil
+            }
             
             let bearing = calculateBearing(from: userLocation, to: poi.coordinate)
             
@@ -309,7 +338,8 @@ struct POIVisibilityService {
     
     // MARK: - Helper Methods
     
-    private static func calculateBearing(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D) -> Double {
+    private static func calculateBearing(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D) -> Double
+    {
         let lat1 = from.latitude.degreesToRadians
         let lon1 = from.longitude.degreesToRadians
         let lat2 = to.latitude.degreesToRadians
@@ -325,13 +355,16 @@ struct POIVisibilityService {
         return (bearing + 360).truncatingRemainder(dividingBy: 360)
     }
     
-    private static func normalizeAngleDifference(_ angle1: Double, _ angle2: Double) -> Double {
+    private static func normalizeAngleDifference(_ angle1: Double, _ angle2: Double) -> Double
+    {
         var diff = angle2 - angle1
         
-        while diff > 180 {
+        while diff > 180
+        {
             diff -= 360
         }
-        while diff < -180 {
+        while diff < -180
+        {
             diff += 360
         }
         
@@ -342,6 +375,12 @@ struct POIVisibilityService {
 // MARK: - Extensions
 
 extension Double {
-    var degreesToRadians: Double { self * .pi / 180 }
-    var radiansToDegrees: Double { self * 180 / .pi }
+    var degreesToRadians: Double
+    {
+        self * .pi / 180
+    }
+    var radiansToDegrees: Double
+    {
+        self * 180 / .pi
+    }
 }
