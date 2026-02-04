@@ -14,6 +14,7 @@ struct HUDView: View
     @State private var cameraManager = CameraManager()
     @State private var locationManager = LocationManager()
     @State private var settings = HUDSettings.shared
+    @State private var waypointTracker = RouteWaypointTracker()
     @State private var visiblePOIs: [POIVisibilityService.VisiblePOI] = []
     @State private var nearbyPOIs: [POIVisibilityService.VisiblePOI] = []
     @State private var allRadarPOIs: [POIVisibilityService.VisiblePOI] = []
@@ -229,6 +230,9 @@ struct HUDView: View
         {
             return
         }
+        
+        // Check waypoint proximity for visit tracking
+        waypointTracker.checkWaypointProximity(userLocation: location)
         
         // Update visible POIs based on camera direction
         visiblePOIs = POIVisibilityService.visiblePOIs(

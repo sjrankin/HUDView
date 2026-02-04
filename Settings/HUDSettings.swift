@@ -23,6 +23,7 @@ import AVFoundation
         static let maxPOIDistance = "hudSettings.maxPOIDistance"
         static let maxListDistance = "hudSettings.maxListDistance"
         static let distanceUnit = "hudSettings.distanceUnit"
+        static let visitedRoutePOIs = "hudSettings.visitedRoutePOIs"
     }
     
     /// Distance unit for display
@@ -262,6 +263,22 @@ import AVFoundation
         }
     }
     
+    var visitedRoutePOIs: Set<String>
+    {
+        get
+        {
+            if let names = defaults.array(forKey: Keys.visitedRoutePOIs) as? [String]
+            {
+                return Set(names)
+            }
+            return []
+        }
+        set
+        {
+            defaults.set(Array(newValue), forKey: Keys.visitedRoutePOIs)
+        }
+    }
+    
     // MARK: - Initialization
     
     private init()
@@ -282,5 +299,33 @@ import AVFoundation
         maxPOIDistance = 100_000
         maxListDistance = 50_000
         distanceUnit = .metric
+        visitedRoutePOIs = []
+    }
+    
+    /// Reset all route POI visits
+    func resetRouteVisits()
+    {
+        visitedRoutePOIs = []
+        // Post notification so tracker can reset its internal state
+        NotificationCenter.default.post(name: .routeVisitsReset, object: nil)
+    }
+    
+    /// Mark a route POI as visited
+    func markRouteVisited(_ poiName: String)
+    {
+        visitedRoutePOIs.insert(poiName)
+    }
+    
+    /// Check if a route POI has been visited
+    func isRouteVisited(_ poiName: String) -> Bool
+    {
+        visitedRoutePOIs.contains(poiName)
     }
 }
+// MARK: - Notification Names
+
+extension Notification.Name
+{
+    static let routeVisitsReset = Notification.Name("routeVisitsReset")
+}
+

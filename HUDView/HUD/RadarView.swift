@@ -18,6 +18,31 @@ struct RadarView: View
     
     private let ringCount = 4
     
+    // Zoom state
+    @State private var currentZoomScale: Double = 1.0
+    @State private var activeZoomScale: Double = 1.0
+    @GestureState private var magnifyBy = 1.0
+    
+    // Device orientation tracking
+    @State private var orientation: UIDeviceOrientation = UIDevice.current.orientation
+    
+    // Computed heading adjustment based on device orientation
+    private var orientationOffset: Double {
+        switch orientation {
+        case .landscapeLeft:
+            return 90.0  // Rotate 90° clockwise
+        case .landscapeRight:
+            return -90.0  // Rotate 90° counter-clockwise
+        default:
+            return 0.0  // Portrait or unknown
+        }
+    }
+    
+    // Adjusted heading that accounts for device orientation
+    private var adjustedHeading: Double {
+        return currentHeading + orientationOffset
+    }
+    
     var body: some View
     {
         NavigationStack
@@ -47,11 +72,61 @@ struct RadarView: View
             }
             .preferredColorScheme(.dark)
         }
+        .onAppear {
+            // Start monitoring device orientation
+            UIDevice.current.beginGeneratingDeviceOrientationNotifications()
+            NotificationCenter.default.addObserver(
+                forName: UIDevice.orientationDidChangeNotification,
+                object: nil,
+                queue: .main
+            ) { _ in
+                orientation = UIDevice.current.orientation
+            }
+        }
+        .onDisappear {
+            // Stop monitoring device orientation
+            UIDevice.current.endGeneratingDeviceOrientationNotifications()
+        }
     }
     
     // Pulse animation state
     @State private var pulseScale: CGFloat = 1.0
     @State private var pulseOpacity: Double = 0.0
+    
+    // Computed property for effective max distance based on zoom
+    private var effectiveMaxDistance: Double
+    {
+        maxDistance / currentZoomScale
+    }
+    
+    // Computed property for POI position scaling (60% of zoom)
+    private var poiScaleFactor: Double
+    {
+        1.0 + (currentZoomScale - 1.0) * 0.6
+    }
+    
+    // Computed property for active POI scaling including gesture
+    private var activePoiScaleFactor: Double
+    {
+        1.0 + ((currentZoomScale * magnifyBy) - 1.0) * 0.6
+    }
+    
+    // Magnification gesture for zoom
+    private var magnificationGesture: some Gesture
+    {
+        MagnificationGesture()
+            .updating($magnifyBy) { value, gestureState, _ in
+                gestureState = value
+            }
+            .onEnded { value in
+                // Clamp zoom between 0.25x (4x distance) and 8x (1/8 distance)
+                let newScale = currentZoomScale * value
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7))
+                {
+                    currentZoomScale = min(max(newScale, 0.25), 8.0)
+                }
+            }
+    }
     
     private func radarContent(geometry: GeometryProxy) -> some View
     {
@@ -63,24 +138,15 @@ struct RadarView: View
             Color.black.ignoresSafeArea()
             
             radarDisplay(size: size, center: center)
+                .onTapGesture(count: 2)
+                {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7))
+                    {
+                        currentZoomScale = 1.0
+                    }
+                }
             
             infoOverlay
-            
-            // Debug info at bottom
-            VStack
-            {
-                Spacer()
-                if visiblePOIs.isEmpty
-                {
-                    Text("No POIs found in \(distanceUnit.format(meters: maxDistance)) radius")
-                        .font(.caption)
-                        .foregroundColor(.red)
-                        .padding(8)
-                        .background(Color.black.opacity(0.7))
-                        .cornerRadius(8)
-                        .padding(.bottom, 8)
-                }
-            }
         }
     }
     
@@ -93,12 +159,13 @@ struct RadarView: View
             cardinalLines(size: size, center: center)
             headingIndicator(size: size, center: center)
             northLabel(size: size, center: center)
-            poiMarkers(size: size, center: center)
-            userLocationMarker(size: size)
             pulsingEffect(size: size)
+            userLocationMarker(size: size)
+            poiMarkers(size: size, center: center)
         }
         .frame(width: size, height: size)
         .position(center)
+        .gesture(magnificationGesture)
     }
     
     private func backgroundCircle(size: CGFloat) -> some View
@@ -120,22 +187,23 @@ struct RadarView: View
     private func ringView(ring: Int, size: CGFloat, center: CGPoint) -> some View
     {
         let ringSize = size * CGFloat(ring) / CGFloat(ringCount)
-        let ringDistance = maxDistance * Double(ring) / Double(ringCount)
+        let ringDistance = effectiveMaxDistance * Double(ring) / Double(ringCount)
         
         // Use radar's own coordinate space
         let radarCenter = CGPoint(x: size / 2, y: size / 2)
         
-        return ZStack
-        {
-            Circle()
-                .stroke(Color.green.opacity(0.3), lineWidth: 1)
-                .frame(width: ringSize, height: ringSize)
-            
-            Text(distanceUnit.format(meters: ringDistance))
-                .font(.caption2)
-                .foregroundColor(.green.opacity(0.6))
-                .position(x: radarCenter.x, y: radarCenter.y - ringSize / 2 - 10)
-        }
+        return Circle()
+            .stroke(Color.green.opacity(0.3), lineWidth: 1)
+            .frame(width: ringSize, height: ringSize)
+            .overlay(alignment: .top) {
+                Text(distanceUnit.format(meters: ringDistance))
+                    .font(.caption2)
+                    .foregroundColor(.green.opacity(0.6))
+                    .offset(y: -10)
+                    .transaction { transaction in
+                        transaction.animation = nil
+                    }
+            }
     }
     
     private func cardinalLines(size: CGFloat, center: CGPoint) -> some View
@@ -159,7 +227,7 @@ struct RadarView: View
     private func headingIndicator(size: CGFloat, center: CGPoint) -> some View
     {
         let radarCenter = CGPoint(x: size / 2, y: size / 2)
-        let angle = -currentHeading * .pi / 180
+        let angle = -adjustedHeading * .pi / 180
         let length = size / 2
         let endX = radarCenter.x + length * sin(angle)
         let endY = radarCenter.y - length * cos(angle)
@@ -176,43 +244,55 @@ struct RadarView: View
     private func northLabel(size: CGFloat, center: CGPoint) -> some View
     {
         let radarCenter = CGPoint(x: size / 2, y: size / 2)
-        let angle = -currentHeading * .pi / 180
+        let angle = -adjustedHeading * .pi / 180
         let xPos = radarCenter.x + (size / 2 + 20) * sin(angle)
         let yPos = radarCenter.y - (size / 2 + 20) * cos(angle)
         
         return Text("N")
             .font(.headline)
             .foregroundColor(.yellow)
-            .rotationEffect(.degrees(-currentHeading))
+            .rotationEffect(.degrees(-adjustedHeading))
             .position(x: xPos, y: yPos)
     }
     
     private func poiMarkers(size: CGFloat, center: CGPoint) -> some View
     {
-        ForEach(visiblePOIs.indices, id: \.self)
+        // Sort POIs by distance (farthest first) so closest are drawn on top
+        let sortedPOIs = visiblePOIs.enumerated().sorted { $0.element.distance > $1.element.distance }
+        
+        return ForEach(sortedPOIs, id: \.offset)
         {
-            index in
-            poiMarkerView(poi: visiblePOIs[index], size: size, center: center)
+            indexedPOI in
+            poiMarkerView(poi: indexedPOI.element, size: size, center: center)
         }
+        .zIndex(100)
     }
     
     @ViewBuilder private func poiMarkerView(poi: POIVisibilityService.VisiblePOI, size: CGFloat,
                                             center: CGPoint) -> some View
     {
-        if poi.distance <= maxDistance
+        if poi.distance <= effectiveMaxDistance
         {
             // Calculate position relative to radar's own coordinate space (center of radar)
             let radarCenter = CGPoint(x: size / 2, y: size / 2)
-            let position = calculatePOIPosition(
+            let basePosition = calculatePOIPosition(
                 poi: poi,
                 center: radarCenter,
                 radarRadius: size / 2,
-                maxDistance: maxDistance,
-                currentHeading: currentHeading
+                maxDistance: effectiveMaxDistance,
+                currentHeading: adjustedHeading
             )
             
-            RadarPOIMarker(poi: poi)
-                .position(position)
+            // Apply 60% scaling to the position offset from center
+            let offsetX = (basePosition.x - radarCenter.x) * activePoiScaleFactor
+            let offsetY = (basePosition.y - radarCenter.y) * activePoiScaleFactor
+            let scaledPosition = CGPoint(
+                x: radarCenter.x + offsetX,
+                y: radarCenter.y + offsetY
+            )
+            
+            RadarPOIMarker(poi: poi, iconScale: activePoiScaleFactor)
+                .position(scaledPosition)
         }
     }
     
@@ -245,32 +325,36 @@ struct RadarView: View
     {
         VStack
         {
-            HStack
+            VStack(alignment: .leading, spacing: 4)
             {
-                VStack(alignment: .leading, spacing: 4)
+                Text("Heading: \(Int(adjustedHeading))°")
+                    .font(.caption)
+                    .foregroundColor(.green)
+                Text("Range: \(distanceUnit.format(meters: effectiveMaxDistance))")
+                    .font(.caption)
+                    .foregroundColor(.green)
+                if currentZoomScale != 1.0
                 {
-                    Text("Heading: \(Int(currentHeading))°")
+                    Text("Zoom: \(String(format: "%.1fx", currentZoomScale))")
                         .font(.caption)
-                        .foregroundColor(.green)
-                    Text("Range: \(distanceUnit.format(meters: maxDistance))")
-                        .font(.caption)
-                        .foregroundColor(.green)
-                    let visibleCount = visiblePOIs.filter { $0.distance <= maxDistance }.count
-                    Text("POIs: \(visibleCount) of \(visiblePOIs.count)")
-                        .font(.caption)
-                        .foregroundColor(.green)
-                    if visiblePOIs.isEmpty {
-                        Text("⚠️ No POIs in range")
-                            .font(.caption2)
-                            .foregroundColor(.yellow)
-                    }
+                        .foregroundColor(.yellow)
                 }
-                Spacer()
+                let visibleCount = visiblePOIs.filter { $0.distance <= effectiveMaxDistance }.count
+                Text("POIs: \(visibleCount) of \(visiblePOIs.count)")
+                    .font(.caption)
+                    .foregroundColor(.green)
+                if visiblePOIs.isEmpty {
+                    Text("⚠️ No POIs in range")
+                        .font(.caption2)
+                        .foregroundColor(.yellow)
+                }
             }
             .padding()
             .background(Color.black.opacity(0.6))
             .cornerRadius(8)
+            .fixedSize(horizontal: true, vertical: false)
             .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
             
             Spacer()
         }
@@ -308,7 +392,14 @@ struct RadarView: View
 struct RadarPOIMarker: View
 {
     let poi: POIVisibilityService.VisiblePOI
+    let iconScale: Double
     @State private var showLabel = false
+    @State private var settings = HUDSettings.shared
+    
+    // Computed sizes with minimum bounds
+    private var outerSize: CGFloat { max(32 * iconScale, 16) }
+    private var circleSize: CGFloat { max(24 * iconScale, 12) }
+    private var iconSize: CGFloat { max(11 * iconScale, 8) }
     
     var body: some View
     {
@@ -317,21 +408,33 @@ struct RadarPOIMarker: View
             // POI icon with better visibility
             ZStack
             {
-                // Outer glow/ring for visibility
-                Circle()
-                    .fill(poiColor.opacity(0.3))
-                    .frame(width: 28, height: 28)
+                // Outer glow/ring for visibility (only for non-route POIs)
+                if poi.poi.type != .route
+                {
+                    Circle()
+                        .fill(poiColor.opacity(0.4))
+                        .frame(width: outerSize, height: outerSize)
+                }
                 
-                // Inner circle background
+                // Background circle
                 Circle()
-                    .fill(Color.black.opacity(0.8))
-                    .frame(width: 22, height: 22)
+                    .fill(backgroundColor)
+                    .frame(width: circleSize, height: circleSize)
+                    .overlay(
+                        Circle()
+                            .stroke(outlineColor, lineWidth: outlineWidth)
+                    )
                 
-                // Icon
+                // Icon on top - always visible
                 Image(systemName: poi.poi.type.icon)
-                    .font(.system(size: 12))
-                    .foregroundColor(poiColor)
+                    .font(.system(size: iconSize, weight: .bold))
+                    .foregroundColor(iconColor)
+                    .shadow(color: .black.opacity(0.5), radius: 1, x: 0, y: 0)
+                    .drawingGroup() // Force render as bitmap for performance/reliability
             }
+            .allowsHitTesting(true)
+            .contentShape(Circle())
+            .drawingGroup() // Composite the entire marker
             .onTapGesture
             {
                 withAnimation
@@ -358,15 +461,79 @@ struct RadarPOIMarker: View
                 .cornerRadius(4)
                 .overlay(
                     RoundedRectangle(cornerRadius: 4)
-                        .stroke(poiColor, lineWidth: 1)
+                        .stroke(iconColor, lineWidth: 1)
                 )
                 .transition(.opacity)
             }
         }
     }
     
+    private var backgroundColor: Color
+    {
+        // Route waypoints get dark gray background
+        if poi.poi.type == .route
+        {
+            return Color(white: 0.25) // Dark gray
+        }
+        // Other POIs use their type color as background
+        return poiColor
+    }
+    
+    private var outlineColor: Color
+    {
+        // Route waypoints get black outline
+        if poi.poi.type == .route
+        {
+            return .black
+        }
+        // Other POIs have no special outline
+        return .clear
+    }
+    
+    private var outlineWidth: CGFloat
+    {
+        // Route waypoints get thicker outline
+        if poi.poi.type == .route
+        {
+            return 2
+        }
+        return 0
+    }
+    
+    private var iconColor: Color
+    {
+        // Route waypoints change icon color based on visited state
+        if poi.poi.type == .route
+        {
+            if settings.isRouteVisited(poi.poi.name)
+            {
+                return Color(red: 0, green: 1, blue: 0) // Bright green
+            }
+            else
+            {
+                return Color(white: 0.7) // Light gray
+            }
+        }
+        // Other POIs get white icons
+        return .white
+    }
+    
     private var poiColor: Color
     {
+        // Check if this is a route POI and if it's been visited
+        if poi.poi.type == .route
+        {
+            if settings.isRouteVisited(poi.poi.name)
+            {
+                return .green // Visited route POIs are green
+            }
+            else
+            {
+                return .yellow // Unvisited route POIs are yellow for visibility on dark radar
+            }
+        }
+        
+        // For non-route POIs, use the standard color
         switch poi.poi.type.color
         {
         case "orange": return .orange

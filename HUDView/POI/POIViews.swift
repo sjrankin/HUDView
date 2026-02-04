@@ -124,6 +124,7 @@ struct POIOverlayView: View
 struct POIMarker: View
 {
     let visiblePOI: POIVisibilityService.VisiblePOI
+    @State private var settings = HUDSettings.shared
     
     var body: some View
     {
@@ -178,6 +179,20 @@ struct POIMarker: View
     
     private var colorForType: Color
     {
+        // Check if this is a route POI and if it's been visited
+        if visiblePOI.poi.type == .route
+        {
+            if settings.isRouteVisited(visiblePOI.poi.name)
+            {
+                return .green // Visited route POIs are green
+            }
+            else
+            {
+                return .gray // Unvisited route POIs are gray
+            }
+        }
+        
+        // For non-route POIs, use the standard color
         switch visiblePOI.poi.type.color
         {
             case "orange": return .orange
@@ -273,6 +288,7 @@ struct POIListView: View
 struct POICard: View
 {
     let visiblePOI: POIVisibilityService.VisiblePOI
+    @State private var settings = HUDSettings.shared
     
     var body: some View
     {
@@ -328,6 +344,20 @@ struct POICard: View
     
     private var colorForType: Color
     {
+        // Check if this is a route POI and if it's been visited
+        if visiblePOI.poi.type == .route
+        {
+            if settings.isRouteVisited(visiblePOI.poi.name)
+            {
+                return .green // Visited route POIs are green
+            }
+            else
+            {
+                return .gray // Unvisited route POIs are gray
+            }
+        }
+        
+        // For non-route POIs, use the standard color
         switch visiblePOI.poi.type.color
         {
             case "orange": return .orange

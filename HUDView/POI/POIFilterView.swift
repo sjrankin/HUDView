@@ -15,6 +15,7 @@ struct POIFilterView: View
     @Binding var maxListDistance: Double
     @Binding var distanceUnit: HUDSettings.DistanceUnit
     @Environment(\.dismiss) var dismiss
+    @State private var showRouteDebugSettings = false
     
     var body: some View
     {
@@ -161,6 +162,37 @@ struct POIFilterView: View
                         maxListDistance = 50_000
                     }
                 }
+                
+                // Route Debug Section
+                Section
+                {
+                    Button
+                    {
+                        showRouteDebugSettings = true
+                    }
+                    label:
+                    {
+                        HStack
+                        {
+                            Image(systemName: "map.fill")
+                                .foregroundStyle(.blue)
+                            Text("Route Debug Settings")
+                                .foregroundStyle(.primary)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .foregroundStyle(.secondary)
+                                .font(.caption)
+                        }
+                    }
+                }
+                header:
+                {
+                    Text("Route Management")
+                }
+                footer:
+                {
+                    Text("Manage route waypoint visits and debug settings")
+                }
             }
             .navigationTitle("Filter POIs")
             .navigationBarTitleDisplayMode(.inline)
@@ -178,6 +210,10 @@ struct POIFilterView: View
                             .fontWeight(.semibold)
                     }
                 }
+            }
+            .sheet(isPresented: $showRouteDebugSettings)
+            {
+                RouteDebugSettingsView()
             }
         }
         .onAppear
