@@ -20,7 +20,8 @@ struct POIOverlayView: View
             geometry in
             ZStack
             {
-                ForEach(visiblePOIs, id: \.poi.id) { visiblePOI in
+                // Sort POIs by distance (farthest first) so closest are drawn on top
+                ForEach(visiblePOIs.sorted(by: { $0.distance > $1.distance }), id: \.poi.id) { visiblePOI in
                     POIMarker(visiblePOI: visiblePOI)
                         .position(x: calculateHorizontalPosition(
                             bearingDiff: visiblePOI.bearingDifference,
