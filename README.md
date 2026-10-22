@@ -15,7 +15,7 @@ Do not use if you are driving.
 ## Demo
 In the animation below, you will see several points of interest scrolling along the middle of the view. These are pre-set points of interest for testing purposes. The dashed line represents a theoretical horizon to give context to point of interest elevations. Closer points of interest are in front of those further away.
 
-<img src="Images/HudViewVideo.gif" alt="Animation of HUDView running.">\
+<img src="Images/HUDViewVideo.gif" alt="Animation of HUDView running.">\
 The animation above shows the app running and panning across about 100°, looking southwest to northwest.
 
 ### Rationale
