@@ -6,6 +6,10 @@ January 2026\
 ## Summary
 This app shows a live camera view and as the user moves the camera, user-defined locations are shown as markers. Program created with Claude code based on my original code.
 
+## See Also
+1. I created a UIKit version of HUDView called [HUDViewUI](https://github.com/sjrankin/HUDViewUI).
+2. I also created a watchOS version of HUDView called [POIView2](https://github.com/sjrankin/POIView2).
+
 ### Note
 This program is not intended or can be used for direction finding or route planning. It is intended only to show where points of interest are relative to your current location.
 
